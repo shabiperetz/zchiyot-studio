@@ -410,20 +410,29 @@
 
   <!-- התאמת מסגרת מותאמת (מוצג רק במצב מסגרת מותאמת) -->
   <div class="card hidden" id="adjustCard">
-    <h2>התאמת מסגרת מותאמת</h2>
-    <div style="font-size:12.5px;opacity:.8;line-height:1.5;">גרור את התמונה <b>ואת הטקסטים</b> למיקום הרצוי. שנה גודל תמונה עם המחוון/גלגלת/צביטה. "איפוס" מחזיר הכול למקום.</div>
-    <div class="adjust-row">
-      <span style="font-size:13px;opacity:.85;min-width:34px;">גודל</span>
-      <input type="range" id="scaleSlider" min="0.3" max="3" step="0.01" value="1" />
-      <button class="chip" id="resetPhoto" type="button">איפוס</button>
+    <h2>התאמות עיצוב</h2>
+    <label class="collage-toggle hidden" id="freeTextRow" style="margin-bottom:0;">
+      <input type="checkbox" id="freeTextToggle" />
+      מיקום טקסט חופשי — גרור כל טקסט למקום שתרצה
+    </label>
+    <div id="photoControls" class="hidden">
+      <div style="font-size:12.5px;opacity:.8;line-height:1.5;margin-top:12px;">גרור את התמונה למיקום. שנה גודל עם המחוון, גלגלת, או צביטה בשתי אצבעות.</div>
+      <div class="adjust-row">
+        <span style="font-size:13px;opacity:.85;min-width:34px;">גודל</span>
+        <input type="range" id="scaleSlider" min="0.3" max="3" step="0.01" value="1" />
+      </div>
+      <div class="adjust-row">
+        <span style="font-size:13px;opacity:.85;min-width:34px;">סיבוב</span>
+        <button class="chip" id="rotLeft" type="button" title="סובב שמאלה 90°">⟲ 90°</button>
+        <input type="range" id="rotSlider" min="-180" max="180" step="1" value="0" />
+        <button class="chip" id="rotRight" type="button" title="סובב ימינה 90°">90° ⟳</button>
+      </div>
     </div>
-    <div class="adjust-row">
-      <span style="font-size:13px;opacity:.85;min-width:34px;">סיבוב</span>
-      <button class="chip" id="rotLeft" type="button" title="סובב שמאלה 90°">⟲ 90°</button>
-      <input type="range" id="rotSlider" min="-180" max="180" step="1" value="0" />
-      <button class="chip" id="rotRight" type="button" title="סובב ימינה 90°">90° ⟳</button>
+    <div class="adjust-row hidden" id="dragHintRow">
+      <button class="chip" id="resetPhoto" type="button">איפוס מיקומים</button>
+      <span style="font-size:12px;opacity:.7;">גרור טקסטים על התצוגה למקום הרצוי</span>
     </div>
-    <div style="font-size:12.5px;opacity:.8;margin-top:14px;">הצג/הסתר טקסטים (אם המסגרת כבר כוללת אזורי טקסט):</div>
+    <div style="font-size:12.5px;opacity:.8;margin-top:14px;">הצג/הסתר טקסטים:</div>
     <div class="toggles" id="textToggles"></div>
   </div>
 
@@ -562,6 +571,7 @@ const state = {
   textPos: {},                   // מיקום טקסטים חופשי במסגרת מותאמת {key:{x,y}} (ריק = ברירת מחדל)
   font: 'Heebo',                 // פונט הסטורי
   collage: { on: false, images: [] }, // מצב קולאז' — מספר תמונות זכייה (Data URLs)
+  freeText: false,               // מיקום טקסט חופשי בסגנונות מובנים (בגרירה)
 };
 const COLLAGE_MAX = 6;
 
@@ -785,15 +795,26 @@ function buildFrameCard(f, canDelete) {
   return card;
 }
 
-function toggleAdjustCard() {
-  $('adjustCard').classList.toggle('hidden', !isCustom());
+function updateAdjustUI() {
+  const card = $('adjustCard');
+  const show = hasContent();
+  card.classList.toggle('hidden', !show);
+  if (!show) return;
+  const custom = isCustom();
+  // פקדי תמונה (גודל/סיבוב) — רק במסגרת מותאמת עם תמונה יחידה
+  $('photoControls').classList.toggle('hidden', !(custom && !state.collage.on && state.imageData));
+  // מתג "מיקום טקסט חופשי" — רק בסגנונות מובנים (במסגרת מותאמת הטקסט תמיד נגרר)
+  $('freeTextRow').classList.toggle('hidden', custom);
+  $('freeTextToggle').checked = state.freeText;
+  // שורת גרירה/איפוס — כשמותר לגרור טקסט (מסגרת מותאמת תמיד; מובנה כשחופשי דלוק)
+  $('dragHintRow').classList.toggle('hidden', !(custom || state.freeText));
 }
 
 function selectBuiltin(id) {
   state.customId = null;
   state.style = id;
   markActiveStyle();
-  toggleAdjustCard();
+  updateAdjustUI();
   renderStory();
 }
 
@@ -802,7 +823,7 @@ function selectCustom(id) {
   if (!f) return;
   state.customId = id;
   markActiveStyle();
-  toggleAdjustCard();
+  updateAdjustUI();
   syncScaleSlider();
   syncRotSlider();
   if (!f.data && f.file) {
@@ -902,6 +923,7 @@ fileInput.addEventListener('change', async (e) => {
     syncRotSlider();
   }
   updateActionButtons();
+  updateAdjustUI();
   renderStory();
 });
 
@@ -912,6 +934,7 @@ collageToggle.addEventListener('change', () => {
   collageCount.classList.toggle('hidden', !state.collage.on);
   renderCollageStrip();
   updateActionButtons();
+  updateAdjustUI();
   renderStory();
 });
 
@@ -921,7 +944,7 @@ function renderCollageStrip() {
     `<div class="collage-thumb"><img src="${src}" alt="" /><button class="x" data-i="${i}" type="button">✕</button></div>`).join('');
   collageStrip.querySelectorAll('.x').forEach((b) => b.addEventListener('click', () => {
     state.collage.images.splice(+b.dataset.i, 1);
-    renderCollageStrip(); updateActionButtons(); renderStory();
+    renderCollageStrip(); updateActionButtons(); updateAdjustUI(); renderStory();
   }));
   collageCount.textContent = state.collage.images.length
     ? `${state.collage.images.length} תמונות · אפשר להוסיף עד ${COLLAGE_MAX}`
@@ -1065,30 +1088,39 @@ function buildStoryDOM() {
         ? `<img class="st-photo" src="${s.imageData}" alt="תמונת זכייה" />`
         : `<div class="st-photo-empty">כאן תופיע תמונת הזכייה</div>`);
 
+  const to = s.textOn;
   const showTotal = isMulti || s.collage.on;
-  const amountHtml = amount
+  const amountHtml = (to.amount && amount)
     ? `${showTotal ? '<div class="st-amount-label">סכום כולל</div>' : ''}
        <div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`
     : '';
-
-  const badgeHtml = badge ? `<div class="st-badge">${escapeHtml(badge)}</div>` : '';
+  const badgeHtml = (to.badge && badge) ? `<div class="st-badge">${escapeHtml(badge)}</div>` : '';
   const verifiedHtml = isAuth ? `<div class="st-verified">✔ תמונה אמיתית · לא נערכה</div>` : '';
 
-  story.innerHTML = `
-    <div class="st-bg"></div>
-    <div class="st-decor">${decorHTML(s.style)}</div>
-    <div class="st-content">
-      ${s.title ? `<div class="st-title">${escapeHtml(s.title)}</div>` : ''}
-      ${amountHtml}
-      ${badgeHtml}
-      <div class="st-frame">${imgHtml}</div>
-      ${verifiedHtml}
-      ${s.cta ? `<div class="st-cta">${escapeHtml(s.cta)}</div>` : ''}
-      <div class="st-brand">
-        <div class="b1">מפגש הספורט טבריה</div>
-        <div class="b2">שד' ספיר, טבריה</div>
+  if (s.freeText) {
+    // מיקום טקסט חופשי: התמונה/קולאז' במרכז + טקסטים נגררים מעל
+    story.innerHTML = `
+      <div class="st-bg"></div>
+      <div class="st-decor">${decorHTML(s.style)}</div>
+      <div class="st-content" style="padding:120px 72px;">
+        <div class="st-frame">${imgHtml}</div>
       </div>
-    </div>`;
+      ${draggableTextHTML()}`;
+    attachTextInteractions();
+  } else {
+    story.innerHTML = `
+      <div class="st-bg"></div>
+      <div class="st-decor">${decorHTML(s.style)}</div>
+      <div class="st-content">
+        ${to.title && s.title ? `<div class="st-title">${escapeHtml(s.title)}</div>` : ''}
+        ${amountHtml}
+        ${badgeHtml}
+        <div class="st-frame">${imgHtml}</div>
+        ${verifiedHtml}
+        ${to.cta && s.cta ? `<div class="st-cta">${escapeHtml(s.cta)}</div>` : ''}
+        ${to.brand ? `<div class="st-brand"><div class="b1">מפגש הספורט טבריה</div><div class="b2">שד' ספיר, טבריה</div></div>` : ''}
+      </div>`;
+  }
 }
 
 // ---------- מצב מסגרת מותאמת אישית ----------
@@ -1115,28 +1147,35 @@ function buildCustomStoryDOM() {
         ? `<div class="st-photo-layer" style="transform:translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) rotate(${t.rot || 0}deg) scale(${t.scale});"><img class="st-photo-free" src="${s.imageData}" alt="תמונת זכייה" /></div>`
         : `<div class="st-photo-layer" style="transform:translate(-50%,-50%);"><div class="st-photo-empty" style="width:100%;height:100%;">העלה תמונה</div></div>`);
 
-  // עוטף כל טקסט בשכבה נגררת הממוקמת לפי textPos (או ברירת מחדל)
-  const drag = (key, inner) => {
-    const p = s.textPos[key] || DEFAULT_TEXT_POS[key];
-    return `<div class="st-drag" data-key="${key}" style="left:${p.x}px;top:${p.y}px;">${inner}</div>`;
-  };
-
-  const parts = [];
-  if (to.title && s.title) parts.push(drag('title', `<div class="st-title">${escapeHtml(s.title)}</div>`));
-  if (to.amount && amount) parts.push(drag('amount', `${s.collage.on ? '<div class="st-amount-label">סכום כולל</div>' : ''}<div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`));
-  if (to.badge && badge) parts.push(drag('badge', `<div class="st-badge">${escapeHtml(badge)}</div>`));
-  if (to.cta && s.cta) parts.push(drag('cta', `<div class="st-cta">${escapeHtml(s.cta)}</div>`));
-  if (to.brand) parts.push(drag('brand', `<div class="st-brand"><div class="b1">מפגש הספורט טבריה</div><div class="b2">שד' ספיר, טבריה</div></div>`));
-
   story.innerHTML = `
     <div class="st-bg"></div>
     ${bgFrame}
     ${photo}
     ${overlay}
-    ${parts.join('')}`;
+    ${draggableTextHTML()}`;
 
   attachPhotoInteractions();
   attachTextInteractions();
+}
+
+// טקסטים נגררים (משותף למצב מסגרת מותאמת ולמצב "טקסט חופשי" בסגנונות מובנים)
+function draggableTextHTML() {
+  const s = state;
+  const amount = formatAmount(s.amount);
+  const badge = gameName(s.gameType);
+  const to = s.textOn;
+  const showTotal = s.collage.on || s.style === 'multiple_wins';
+  const drag = (key, inner) => {
+    const p = s.textPos[key] || DEFAULT_TEXT_POS[key];
+    return `<div class="st-drag" data-key="${key}" style="left:${p.x}px;top:${p.y}px;">${inner}</div>`;
+  };
+  const parts = [];
+  if (to.title && s.title) parts.push(drag('title', `<div class="st-title">${escapeHtml(s.title)}</div>`));
+  if (to.amount && amount) parts.push(drag('amount', `${showTotal ? '<div class="st-amount-label">סכום כולל</div>' : ''}<div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`));
+  if (to.badge && badge) parts.push(drag('badge', `<div class="st-badge">${escapeHtml(badge)}</div>`));
+  if (to.cta && s.cta) parts.push(drag('cta', `<div class="st-cta">${escapeHtml(s.cta)}</div>`));
+  if (to.brand) parts.push(drag('brand', `<div class="st-brand"><div class="b1">מפגש הספורט טבריה</div><div class="b2">שד' ספיר, טבריה</div></div>`));
+  return parts.join('');
 }
 
 // החלת הטרנספורם ישירות (בלי rebuild) — לגרירה חלקה
@@ -1335,7 +1374,7 @@ function deleteFrame(id) {
   renderStylesGrid();
   fitScales();
   renderSwatches();
-  toggleAdjustCard();
+  updateAdjustUI();
   renderStory();
 }
 
@@ -1561,6 +1600,11 @@ function nudgeRot(delta) {
 }
 rotLeft.addEventListener('click', () => nudgeRot(-90));
 rotRight.addEventListener('click', () => nudgeRot(90));
+$('freeTextToggle').addEventListener('change', () => {
+  state.freeText = $('freeTextToggle').checked;
+  updateAdjustUI();
+  renderStory();
+});
 resetPhoto.addEventListener('click', () => {
   state.photoTransform = { x: 0, y: 0, scale: 1, rot: 0 };
   state.textPos = {}; // החזרת הטקסטים למיקומי ברירת המחדל
@@ -1587,6 +1631,7 @@ renderStylesGrid();                // בונה סגנונות מובנים + מ�
 loadBuiltinFrames();               // טוען אוטומטית מסגרות מ-assets/frames (אם קיימות)
 buildStoryDOM();
 renderSwatches();
+updateAdjustUI();
 fitScales();                       // מיידי (אחרי שה-layout מוכן)
 setTimeout(fitScales, 60);         // גיבוי אם ה-layout עדיין לא הושלם
 window.addEventListener('resize', fitScales);
