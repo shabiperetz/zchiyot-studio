@@ -165,6 +165,15 @@
   text-align:center;cursor:grab;touch-action:none;}
 .st-drag.dragging{cursor:grabbing;}
 .st-drag .st-title,.st-drag .st-cta{white-space:normal;}
+
+/* קולאז' — גריד תמונות */
+.st-collage{display:grid;gap:16px;width:100%;height:100%;}
+.st-cell{position:relative;overflow:hidden;border-radius:14px;background:rgba(0,0,0,.4);
+  border:3px solid var(--accent,#d4af37);box-shadow:0 10px 26px rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;}
+.st-cell img{width:100%;height:100%;object-fit:contain;display:block;}
+.st-collage-wrap{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:840px;height:1080px;}
 </style>
 
 <!-- ============================================================
@@ -314,6 +323,20 @@
     border:1px solid rgba(255,255,255,.12);cursor:pointer;user-select:none;}
   .toggle input{accent-color:var(--gold);width:16px;height:16px;}
 
+  /* מצב קולאז' */
+  .collage-toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px;
+    font-size:14px;font-weight:600;cursor:pointer;user-select:none;
+    background:rgba(0,0,0,.2);padding:11px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.12);}
+  .collage-toggle input{width:18px;height:18px;accent-color:var(--gold);}
+  .collage-strip{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+  .collage-thumb{position:relative;width:64px;height:84px;border-radius:8px;overflow:hidden;
+    border:1px solid rgba(212,175,55,.4);background:#111;}
+  .collage-thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .collage-thumb .x{position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+    background:rgba(0,0,0,.7);color:#fff;border:none;font-size:12px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;}
+  .collage-count{font-size:11.5px;opacity:.7;margin-top:8px;}
+
   /* מודאל בחירת סוג מסגרת */
   .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;
     display:flex;align-items:center;justify-content:center;padding:22px;}
@@ -349,6 +372,10 @@
   <!-- העלאת תמונה -->
   <div class="card">
     <h2>תמונת הזכייה</h2>
+    <label class="collage-toggle">
+      <input type="checkbox" id="collageToggle" />
+      מצב קולאז' — כמה תמונות זכייה בסטורי אחד
+    </label>
     <input type="file" id="fileInput" accept="image/*" />
     <button class="upload-btn" id="uploadBtn" type="button">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -356,6 +383,8 @@
       </svg>
       <span id="uploadLabel">בחר / צלם תמונה</span>
     </button>
+    <div class="collage-strip" id="collageStrip"></div>
+    <div class="collage-count hidden" id="collageCount"></div>
     <div class="note">התמונה שלך נשארת <b>שלמה וללא שינוי</b> — היא רק ממוקמת בתוך העיצוב (object-fit: contain, בלי חיתוך). לא נוגעים בטפסים, קבלות, סכומים, QR, ברקודים או קלפים.</div>
   </div>
 
@@ -532,7 +561,9 @@ const state = {
   textOn: { title: true, amount: true, badge: true, cta: true, brand: true },
   textPos: {},                   // מיקום טקסטים חופשי במסגרת מותאמת {key:{x,y}} (ריק = ברירת מחדל)
   font: 'Heebo',                 // פונט הסטורי
+  collage: { on: false, images: [] }, // מצב קולאז' — מספר תמונות זכייה (Data URLs)
 };
+const COLLAGE_MAX = 6;
 
 // מיקומי ברירת מחדל לטקסטים (מרכז-X, Y בקואורדינטות 1080x1920)
 const DEFAULT_TEXT_POS = {
@@ -830,24 +861,83 @@ ctaCustom.addEventListener('input', () => { state.cta = ctaCustom.value.trim(); 
 amountInput.addEventListener('input', (e) => { state.amount = e.target.value; renderStory(); });
 
 // ---------- העלאת תמונה (נשמרת כ-Data URL, ללא שינוי פיקסלים) ----------
+const collageToggle = $('collageToggle');
+const collageStrip = $('collageStrip');
+const collageCount = $('collageCount');
+
+function readFileAsDataURL(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+function hasContent() {
+  return state.collage.on ? state.collage.images.length > 0 : !!state.imageData;
+}
+function updateActionButtons() {
+  const ok = hasContent();
+  downloadBtn.disabled = !ok;
+  shareBtn.disabled = !ok;
+}
+
 uploadBtn.addEventListener('click', () => fileInput.click());
-fileInput.addEventListener('change', (e) => {
-  const file = e.target.files && e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    state.imageData = reader.result; // Data URL מקורי
-    state.photoTransform = { x: 0, y: 0, scale: 1, rot: 0 }; // איפוס מיקום/גודל/סיבוב לתמונה חדשה
+fileInput.addEventListener('change', async (e) => {
+  const files = [...(e.target.files || [])];
+  e.target.value = '';
+  if (!files.length) return;
+  if (state.collage.on) {
+    for (const f of files) {
+      if (state.collage.images.length >= COLLAGE_MAX) { showToast('מקסימום ' + COLLAGE_MAX + ' תמונות'); break; }
+      state.collage.images.push(await readFileAsDataURL(f)); // ללא עיבוד — כפי שהיא
+    }
+    renderCollageStrip();
+  } else {
+    state.imageData = await readFileAsDataURL(files[0]);
+    state.photoTransform = { x: 0, y: 0, scale: 1, rot: 0 };
     uploadBtn.classList.add('has-image');
     uploadLabel.textContent = 'החלף תמונה';
-    downloadBtn.disabled = false;
-    shareBtn.disabled = false;
     syncScaleSlider();
     syncRotSlider();
-    renderStory();
-  };
-  reader.readAsDataURL(file); // ללא עיבוד — התמונה נשמרת כפי שהיא
+  }
+  updateActionButtons();
+  renderStory();
 });
+
+collageToggle.addEventListener('change', () => {
+  state.collage.on = collageToggle.checked;
+  fileInput.multiple = state.collage.on;
+  uploadLabel.textContent = state.collage.on ? 'הוסף תמונות' : (state.imageData ? 'החלף תמונה' : 'בחר / צלם תמונה');
+  collageCount.classList.toggle('hidden', !state.collage.on);
+  renderCollageStrip();
+  updateActionButtons();
+  renderStory();
+});
+
+function renderCollageStrip() {
+  if (!state.collage.on) { collageStrip.innerHTML = ''; collageCount.textContent = ''; return; }
+  collageStrip.innerHTML = state.collage.images.map((src, i) =>
+    `<div class="collage-thumb"><img src="${src}" alt="" /><button class="x" data-i="${i}" type="button">✕</button></div>`).join('');
+  collageStrip.querySelectorAll('.x').forEach((b) => b.addEventListener('click', () => {
+    state.collage.images.splice(+b.dataset.i, 1);
+    renderCollageStrip(); updateActionButtons(); renderStory();
+  }));
+  collageCount.textContent = state.collage.images.length
+    ? `${state.collage.images.length} תמונות · אפשר להוסיף עד ${COLLAGE_MAX}`
+    : `הוסף עד ${COLLAGE_MAX} תמונות זכייה`;
+}
+
+// בונה גריד קולאז' (object-fit: contain — בלי חיתוך)
+function collageGridHTML(images) {
+  const n = Math.min(images.length, COLLAGE_MAX);
+  const cols = n <= 1 ? 1 : (n === 2 ? 1 : 2);
+  const cells = images.slice(0, n).map((src, i) => {
+    const span = (n > 2 && n % 2 === 1 && i === n - 1) ? 'grid-column:1 / -1;' : '';
+    return `<div class="st-cell" style="${span}"><img src="${src}" alt="תמונת זכייה" /></div>`;
+  }).join('');
+  return `<div class="st-collage" style="grid-template-columns:repeat(${cols},1fr);">${cells}</div>`;
+}
 
 // ============================================================
 //   בניית הסטורי (DOM)
@@ -968,13 +1058,16 @@ function buildStoryDOM() {
   const isMulti = s.style === 'multiple_wins';
   const isAuth = s.style === 'authenticity_frame';
 
-  // תמונה — img רגיל, ללא שינוי, object-fit:contain
-  const imgHtml = s.imageData
-    ? `<img class="st-photo" src="${s.imageData}" alt="תמונת זכייה" />`
-    : `<div class="st-photo-empty">כאן תופיע תמונת הזכייה</div>`;
+  // תמונה — img רגיל / גריד קולאז', ללא שינוי, object-fit:contain
+  const imgHtml = s.collage.on
+    ? (s.collage.images.length ? collageGridHTML(s.collage.images) : `<div class="st-photo-empty">הוסף תמונות לקולאז'</div>`)
+    : (s.imageData
+        ? `<img class="st-photo" src="${s.imageData}" alt="תמונת זכייה" />`
+        : `<div class="st-photo-empty">כאן תופיע תמונת הזכייה</div>`);
 
+  const showTotal = isMulti || s.collage.on;
   const amountHtml = amount
-    ? `${isMulti ? '<div class="st-amount-label">סכום כולל</div>' : ''}
+    ? `${showTotal ? '<div class="st-amount-label">סכום כולל</div>' : ''}
        <div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`
     : '';
 
@@ -1016,9 +1109,11 @@ function buildCustomStoryDOM() {
   const bgFrame = f.type === 'bg' ? `<img class="st-frame-bg" src="${fsrc}" alt="" />` : '';
   const overlay = f.type === 'overlay' ? `<img class="st-frame-overlay" src="${fsrc}" alt="" />` : '';
 
-  const photo = s.imageData
-    ? `<div class="st-photo-layer" style="transform:translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) rotate(${t.rot || 0}deg) scale(${t.scale});"><img class="st-photo-free" src="${s.imageData}" alt="תמונת זכייה" /></div>`
-    : `<div class="st-photo-layer" style="transform:translate(-50%,-50%);"><div class="st-photo-empty" style="width:100%;height:100%;">העלה תמונה</div></div>`;
+  const photo = s.collage.on
+    ? `<div class="st-collage-wrap">${s.collage.images.length ? collageGridHTML(s.collage.images) : '<div class="st-photo-empty" style="width:100%;height:100%;">הוסף תמונות לקולאז\'</div>'}</div>`
+    : (s.imageData
+        ? `<div class="st-photo-layer" style="transform:translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) rotate(${t.rot || 0}deg) scale(${t.scale});"><img class="st-photo-free" src="${s.imageData}" alt="תמונת זכייה" /></div>`
+        : `<div class="st-photo-layer" style="transform:translate(-50%,-50%);"><div class="st-photo-empty" style="width:100%;height:100%;">העלה תמונה</div></div>`);
 
   // עוטף כל טקסט בשכבה נגררת הממוקמת לפי textPos (או ברירת מחדל)
   const drag = (key, inner) => {
@@ -1028,7 +1123,7 @@ function buildCustomStoryDOM() {
 
   const parts = [];
   if (to.title && s.title) parts.push(drag('title', `<div class="st-title">${escapeHtml(s.title)}</div>`));
-  if (to.amount && amount) parts.push(drag('amount', `<div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`));
+  if (to.amount && amount) parts.push(drag('amount', `${s.collage.on ? '<div class="st-amount-label">סכום כולל</div>' : ''}<div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`));
   if (to.badge && badge) parts.push(drag('badge', `<div class="st-badge">${escapeHtml(badge)}</div>`));
   if (to.cta && s.cta) parts.push(drag('cta', `<div class="st-cta">${escapeHtml(s.cta)}</div>`));
   if (to.brand) parts.push(drag('brand', `<div class="st-brand"><div class="b1">מפגש הספורט טבריה</div><div class="b2">שד' ספיר, טבריה</div></div>`));
@@ -1361,7 +1456,7 @@ function pngFileName() {
 }
 
 downloadBtn.addEventListener('click', async () => {
-  if (!state.imageData) { showToast('צריך קודם להעלות תמונה'); return; }
+  if (!hasContent()) { showToast('צריך קודם להעלות תמונה'); return; }
   setBusy(downloadBtn, true, 'מייצר...');
   try {
     const blob = await buildPngBlob();
@@ -1381,7 +1476,7 @@ downloadBtn.addEventListener('click', async () => {
 });
 
 shareBtn.addEventListener('click', async () => {
-  if (!state.imageData) { showToast('צריך קודם להעלות תמונה'); return; }
+  if (!hasContent()) { showToast('צריך קודם להעלות תמונה'); return; }
   setBusy(shareBtn, true);
   try {
     const blob = await buildPngBlob();
