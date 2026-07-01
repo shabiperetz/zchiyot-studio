@@ -1,12 +1,13 @@
 /* Service Worker — מפגש הספורט טבריה
    מטמון קבצי הליבה כדי שהאפליקציה תעבוד אופליין ותיטען מיידית. */
 
-const CACHE = 'zchiyot-v1';
+const CACHE = 'zchiyot-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icon.svg',
+  './fonts.css',
 ];
 
 self.addEventListener('install', (e) => {

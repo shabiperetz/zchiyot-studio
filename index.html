@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="זכיות טבריה" />
 <link rel="manifest" href="manifest.webmanifest" />
+<link rel="stylesheet" href="fonts.css" />
 <title>מפגש הספורט טבריה — יצירת סטורי זכיות</title>
 
 <!-- ============================================================
@@ -18,7 +19,7 @@
 <style id="storyCss">
 .story{
   width:1080px;height:1920px;position:relative;overflow:hidden;direction:rtl;
-  font-family:"Heebo","Assistant","Rubik","Arial Hebrew",Arial,sans-serif;
+  font-family:var(--story-font,"Heebo","Assistant","Rubik","Arial Hebrew",Arial,sans-serif);
   color:#fff;background:#000;
   --accent:#d4af37;--accent2:#f5d76e;
   --title:#ffffff;--amount:#f5d76e;
@@ -380,7 +381,13 @@
     <div class="adjust-row">
       <span style="font-size:13px;opacity:.85;min-width:34px;">גודל</span>
       <input type="range" id="scaleSlider" min="0.3" max="3" step="0.01" value="1" />
-      <button class="chip" id="resetPhoto" type="button">מרכז</button>
+      <button class="chip" id="resetPhoto" type="button">איפוס</button>
+    </div>
+    <div class="adjust-row">
+      <span style="font-size:13px;opacity:.85;min-width:34px;">סיבוב</span>
+      <button class="chip" id="rotLeft" type="button" title="סובב שמאלה 90°">⟲ 90°</button>
+      <input type="range" id="rotSlider" min="-180" max="180" step="1" value="0" />
+      <button class="chip" id="rotRight" type="button" title="סובב ימינה 90°">90° ⟳</button>
     </div>
     <div style="font-size:12.5px;opacity:.8;margin-top:14px;">הצג/הסתר טקסטים (אם המסגרת כבר כוללת אזורי טקסט):</div>
     <div class="toggles" id="textToggles"></div>
@@ -391,6 +398,18 @@
     <h2>כותרת</h2>
     <select id="titleSelect"></select>
     <textarea id="titleCustom" class="hidden" maxlength="90" placeholder="כתוב כותרת משלך..." style="margin-top:10px;"></textarea>
+  </div>
+
+  <!-- פונט -->
+  <div class="card">
+    <h2>פונט (עיצוב טקסט)</h2>
+    <select id="fontSelect">
+      <option value="Heebo">רגיל ונקי (Heebo)</option>
+      <option value="Rubik">מודרני (Rubik)</option>
+      <option value="Secular One">חגיגי ובולט (Secular One)</option>
+      <option value="Suez One">יוקרתי (Suez One)</option>
+      <option value="Frank Ruhl Libre">אלגנטי קלאסי (Frank Ruhl Libre)</option>
+    </select>
   </div>
 
   <!-- משפט סיום -->
@@ -504,9 +523,11 @@ const state = {
   title: TITLES[1],
   cta: CTAS[0],
   frames: [],                    // ספריית מסגרות מותאמות {id,name,type:'bg'|'overlay',data}
-  photoTransform: { x: 0, y: 0, scale: 1 },   // מיקום/גודל התמונה במצב מסגרת מותאמת
+  photoTransform: { x: 0, y: 0, scale: 1, rot: 0 }, // מיקום/גודל/סיבוב במצב מסגרת מותאמת
   textOn: { title: true, amount: true, badge: true, cta: true, brand: true },
+  font: 'Heebo',                 // פונט הסטורי
 };
+try { const sf = localStorage.getItem('zt_font'); if (sf) state.font = sf; } catch (e) {}
 
 let previewScale = 1;            // קנה המידה של התצוגה המקדימה (לעיבוד קואורדינטות גרירה)
 
@@ -737,6 +758,7 @@ function selectCustom(id) {
   markActiveStyle();
   toggleAdjustCard();
   syncScaleSlider();
+  syncRotSlider();
   if (!f.data && f.file) {
     // מסגרת מובנה — טען את הקובץ (Data URL) פעם אחת, ואז רנדר
     showToast('טוען מסגרת...');
@@ -800,12 +822,13 @@ fileInput.addEventListener('change', (e) => {
   const reader = new FileReader();
   reader.onload = () => {
     state.imageData = reader.result; // Data URL מקורי
-    state.photoTransform = { x: 0, y: 0, scale: 1 }; // איפוס מיקום/גודל לתמונה חדשה
+    state.photoTransform = { x: 0, y: 0, scale: 1, rot: 0 }; // איפוס מיקום/גודל/סיבוב לתמונה חדשה
     uploadBtn.classList.add('has-image');
     uploadLabel.textContent = 'החלף תמונה';
     downloadBtn.disabled = false;
     shareBtn.disabled = false;
     syncScaleSlider();
+    syncRotSlider();
     renderStory();
   };
   reader.readAsDataURL(file); // ללא עיבוד — התמונה נשמרת כפי שהיא
@@ -822,6 +845,11 @@ function escapeHtml(s) {
 function gameName(id) {
   const g = GAME_TYPES.find((x) => x.id === id);
   return g ? g.name : '';
+}
+
+// מחזיר font-family בטוח ל-CSS (עם מרכאות + נפילה)
+function quoteFont(fam) {
+  return `"${fam || 'Heebo'}","Heebo","Assistant","Arial Hebrew",Arial,sans-serif`;
 }
 
 function formatAmount(v) {
@@ -918,6 +946,7 @@ function buildStoryDOM() {
   story.removeAttribute('data-mode');
   story.setAttribute('data-style', s.style);
   story.setAttribute('dir', 'rtl');
+  story.style.setProperty('--story-font', quoteFont(s.font)); // גם לתצוגה וגם לייצוא (clone)
 
   const amount = formatAmount(s.amount);
   const badge = gameName(s.gameType);
@@ -961,6 +990,7 @@ function buildCustomStoryDOM() {
   story.setAttribute('data-style', 'custom');
   story.setAttribute('data-mode', 'custom');
   story.setAttribute('dir', 'rtl');
+  story.style.setProperty('--story-font', quoteFont(s.font));
 
   const amount = formatAmount(s.amount);
   const badge = gameName(s.gameType);
@@ -972,7 +1002,7 @@ function buildCustomStoryDOM() {
   const overlay = f.type === 'overlay' ? `<img class="st-frame-overlay" src="${fsrc}" alt="" />` : '';
 
   const photo = s.imageData
-    ? `<div class="st-photo-layer" style="transform:translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) scale(${t.scale});"><img class="st-photo-free" src="${s.imageData}" alt="תמונת זכייה" /></div>`
+    ? `<div class="st-photo-layer" style="transform:translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) rotate(${t.rot || 0}deg) scale(${t.scale});"><img class="st-photo-free" src="${s.imageData}" alt="תמונת זכייה" /></div>`
     : `<div class="st-photo-layer" style="transform:translate(-50%,-50%);"><div class="st-photo-empty" style="width:100%;height:100%;">העלה תמונה</div></div>`;
 
   const showTitle = to.title && s.title;
@@ -1009,7 +1039,7 @@ function applyPhotoTransform() {
   const el = story.querySelector('.st-photo-layer');
   if (!el) return;
   const t = state.photoTransform;
-  el.style.transform = `translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) scale(${t.scale})`;
+  el.style.transform = `translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) rotate(${t.rot || 0}deg) scale(${t.scale})`;
 }
 
 function syncScaleSlider() {
@@ -1222,11 +1252,21 @@ function renderStory() {
 // ============================================================
 //   ייצוא ל-PNG דרך foreignObject (הדפדפן מרנדר את ה-HTML)
 // ============================================================
+let _fontsCssCache = null;
+function getFontsCss() {
+  if (_fontsCssCache != null) return Promise.resolve(_fontsCssCache);
+  return fetch('fonts.css')
+    .then((r) => (r.ok ? r.text() : ''))
+    .then((t) => { _fontsCssCache = t; return t; })
+    .catch(() => { _fontsCssCache = ''; return ''; });
+}
+
 async function buildPngBlob() {
   buildStoryDOM(); // ודא שהסטורי מעודכן
   await (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
 
-  const css = $('storyCss').textContent;
+  const fontsCss = await getFontsCss(); // פונטים מוטמעים (נחוץ כדי שהייצוא ישתמש בפונט הנבחר)
+  const css = fontsCss + '\n' + $('storyCss').textContent;
 
   // שיבוט הסטורי לייצוא בגודל מלא, מנותק מהתצוגה
   const clone = story.cloneNode(true);
@@ -1342,18 +1382,51 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
 }
 
+// ---------- פונט ----------
+const fontSelect = $('fontSelect');
+function applyFontToRoot() {
+  document.documentElement.style.setProperty('--story-font', quoteFont(state.font));
+}
+fontSelect.value = state.font;
+applyFontToRoot();
+fontSelect.addEventListener('change', () => {
+  state.font = fontSelect.value;
+  try { localStorage.setItem('zt_font', state.font); } catch (e) {}
+  applyFontToRoot();
+  renderStory();
+});
+
 // ---------- פקדי התאמת מסגרת מותאמת ----------
 const scaleSlider = $('scaleSlider');
 const resetPhoto = $('resetPhoto');
+const rotSlider = $('rotSlider');
+const rotLeft = $('rotLeft');
+const rotRight = $('rotRight');
 const textTogglesEl = $('textToggles');
+
+function syncRotSlider() { if (rotSlider) rotSlider.value = state.photoTransform.rot || 0; }
 
 scaleSlider.addEventListener('input', () => {
   state.photoTransform.scale = clamp(parseFloat(scaleSlider.value) || 1, 0.2, 4);
   applyPhotoTransform();
 });
+rotSlider.addEventListener('input', () => {
+  state.photoTransform.rot = parseInt(rotSlider.value, 10) || 0;
+  applyPhotoTransform();
+});
+function nudgeRot(delta) {
+  let r = (state.photoTransform.rot || 0) + delta;
+  if (r > 180) r -= 360; if (r < -180) r += 360;
+  state.photoTransform.rot = r;
+  syncRotSlider();
+  applyPhotoTransform();
+}
+rotLeft.addEventListener('click', () => nudgeRot(-90));
+rotRight.addEventListener('click', () => nudgeRot(90));
 resetPhoto.addEventListener('click', () => {
-  state.photoTransform = { x: 0, y: 0, scale: 1 };
+  state.photoTransform = { x: 0, y: 0, scale: 1, rot: 0 };
   syncScaleSlider();
+  syncRotSlider();
   applyPhotoTransform();
 });
 
