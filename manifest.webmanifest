@@ -1,0 +1,21 @@
+{
+  "name": "מפגש הספורט טבריה — עיצוב זכיות",
+  "short_name": "זכיות טבריה",
+  "description": "עיצוב תמונות זכיות להעלאה יומית לרשתות החברתיות — מהיר, מקומי, פרטי.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#063325",
+  "theme_color": "#0a4d34",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

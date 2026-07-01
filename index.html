@@ -1,0 +1,1390 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0a4d34" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="זכיות טבריה" />
+<link rel="manifest" href="manifest.webmanifest" />
+<title>מפגש הספורט טבריה — יצירת סטורי זכיות</title>
+
+<!-- ============================================================
+     CSS של הסטורי (1080x1920) — נשמר בבלוק נפרד כדי שנשתמש בו
+     גם בתצוגה החיה וגם בייצוא ה-PNG (foreignObject).
+     חשוב: ללא תווי < או & בתוכו כדי לשמור על XML תקין בייצוא.
+     ============================================================ -->
+<style id="storyCss">
+.story{
+  width:1080px;height:1920px;position:relative;overflow:hidden;direction:rtl;
+  font-family:"Heebo","Assistant","Rubik","Arial Hebrew",Arial,sans-serif;
+  color:#fff;background:#000;
+  --accent:#d4af37;--accent2:#f5d76e;
+  --title:#ffffff;--amount:#f5d76e;
+  --badge-bg:#d4af37;--badge-fg:#101010;
+}
+.story *{box-sizing:border-box;margin:0;padding:0;}
+.st-bg{position:absolute;inset:0;}
+.st-decor{position:absolute;inset:0;overflow:hidden;}
+.st-confetti{position:absolute;}
+.st-content{position:absolute;inset:0;display:flex;flex-direction:column;
+  align-items:center;padding:96px 84px 72px;text-align:center;}
+.st-title{direction:rtl;unicode-bidi:plaintext;text-align:center;font-weight:800;
+  font-size:68px;line-height:1.18;letter-spacing:-.5px;color:var(--title);
+  text-shadow:0 4px 20px rgba(0,0,0,.55);max-width:100%;}
+.st-amount-label{margin-top:26px;font-size:40px;font-weight:700;letter-spacing:2px;
+  color:var(--accent2);opacity:.9;}
+.st-amount{margin-top:10px;font-weight:900;font-size:158px;line-height:.95;
+  direction:rtl;unicode-bidi:plaintext;color:var(--amount);
+  text-shadow:0 6px 26px rgba(0,0,0,.5);}
+.st-amount .cur{font-size:88px;font-weight:800;margin-inline-start:14px;}
+.st-badge{margin-top:30px;display:inline-block;padding:16px 46px;border-radius:999px;
+  font-size:40px;font-weight:800;background:var(--badge-bg);color:var(--badge-fg);
+  box-shadow:0 10px 30px rgba(0,0,0,.4);}
+.st-frame{flex:1;width:100%;margin:44px 0;position:relative;padding:26px;
+  border-radius:36px;display:flex;align-items:center;justify-content:center;min-height:0;}
+.st-photo{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;
+  display:block;border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,.6);}
+.st-photo-empty{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  border:3px dashed rgba(255,255,255,.35);border-radius:18px;font-size:44px;
+  color:rgba(255,255,255,.55);font-weight:700;}
+.st-verified{margin-top:-8px;margin-bottom:8px;font-size:34px;font-weight:700;
+  color:var(--accent2);letter-spacing:.5px;}
+.st-cta{direction:rtl;unicode-bidi:plaintext;text-align:center;font-size:50px;
+  font-weight:700;line-height:1.25;color:#fff;text-shadow:0 3px 14px rgba(0,0,0,.55);}
+.st-brand{margin-top:36px;direction:rtl;text-align:center;}
+.st-brand .b1{font-size:48px;font-weight:900;letter-spacing:.5px;color:var(--accent2);
+  text-shadow:0 3px 14px rgba(0,0,0,.5);}
+.st-brand .b2{font-size:34px;font-weight:600;opacity:.9;margin-top:8px;color:#fff;}
+
+/* ---------- א. שחור זהב יוקרתי ---------- */
+.story[data-style="luxury_gold"] .st-bg{
+  background:
+    radial-gradient(60% 40% at 50% 0%, rgba(212,175,55,.22), transparent 70%),
+    radial-gradient(120% 90% at 50% 8%, #2b2b2b 0%, #151515 45%, #050505 100%);
+}
+.story[data-style="luxury_gold"] .st-frame{
+  border:7px solid var(--accent);
+  background:linear-gradient(160deg, rgba(212,175,55,.14), rgba(0,0,0,.4));
+  box-shadow:0 0 70px rgba(212,175,55,.5), 0 30px 70px rgba(0,0,0,.65),
+    inset 0 0 34px rgba(212,175,55,.22);
+}
+
+/* ---------- ב. צ'אנס חגיגי ---------- */
+.story[data-style="chance_gold"]{--amount:#f7e08a;}
+.story[data-style="chance_gold"] .st-bg{
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(212,175,55,.28), transparent 72%),
+    radial-gradient(120% 95% at 50% 5%, #241a06 0%, #100c03 50%, #000 100%);
+}
+.story[data-style="chance_gold"] .st-frame{
+  border:8px double var(--accent);
+  background:linear-gradient(160deg, rgba(212,175,55,.16), rgba(0,0,0,.45));
+  box-shadow:0 0 80px rgba(212,175,55,.55), 0 26px 60px rgba(0,0,0,.6),
+    inset 0 0 30px rgba(212,175,55,.28);
+}
+
+/* ---------- ג. חיש גד צבעוני ---------- */
+.story[data-style="hishgad_festive"]{--amount:#ffe27a;--badge-bg:#ef476f;--badge-fg:#fff;}
+.story[data-style="hishgad_festive"] .st-bg{
+  background:
+    radial-gradient(60% 40% at 20% 0%, rgba(239,71,111,.35), transparent 65%),
+    radial-gradient(60% 40% at 85% 12%, rgba(6,214,160,.3), transparent 65%),
+    radial-gradient(120% 100% at 50% 0%, #3a1d5b 0%, #131a3a 50%, #0a0f1f 100%);
+}
+.story[data-style="hishgad_festive"] .st-frame{
+  border:7px solid transparent;
+  background:
+    linear-gradient(rgba(10,15,31,.5), rgba(10,15,31,.5)) padding-box,
+    linear-gradient(135deg, #f7e08a, #c0c0c0, #f5d76e) border-box;
+  box-shadow:0 0 60px rgba(245,215,110,.4), 0 26px 60px rgba(0,0,0,.55);
+}
+
+/* ---------- ד. ווינר ספורטיבי ---------- */
+.story[data-style="winner_sport"]{--amount:#f5d76e;--badge-bg:#d4af37;--badge-fg:#0a1a3a;}
+.story[data-style="winner_sport"] .st-bg{
+  background:
+    radial-gradient(70% 40% at 50% -5%, rgba(120,170,255,.28), transparent 70%),
+    linear-gradient(180deg, #0a1a3a 0%, #08122b 45%, #04081a 100%);
+}
+.story[data-style="winner_sport"] .st-frame{
+  border:7px solid var(--accent);
+  background:linear-gradient(160deg, rgba(120,170,255,.12), rgba(0,0,0,.45));
+  box-shadow:0 0 70px rgba(212,175,55,.45), 0 26px 60px rgba(0,0,0,.6);
+}
+
+/* ---------- ה. מסגרת אמינות (מינימלי) ---------- */
+.story[data-style="authenticity_frame"]{--title:#f4f1e8;--amount:#e8c766;}
+.story[data-style="authenticity_frame"] .st-content{padding:110px 90px 84px;}
+.story[data-style="authenticity_frame"] .st-title{font-size:60px;}
+.story[data-style="authenticity_frame"] .st-frame{
+  margin:52px 0;padding:20px;
+  border:3px solid var(--accent);outline:1px solid rgba(212,175,55,.4);
+  outline-offset:10px;background:rgba(255,255,255,.03);
+  box-shadow:0 24px 60px rgba(0,0,0,.55);
+}
+.story[data-style="authenticity_frame"] .st-bg{
+  background:
+    radial-gradient(120% 90% at 50% 0%, #23262b 0%, #14161a 55%, #0a0b0d 100%);
+}
+
+/* ---------- ו. יום של זכיות ---------- */
+.story[data-style="multiple_wins"]{--amount:#f7e08a;--badge-bg:#f5d76e;--badge-fg:#101010;}
+.story[data-style="multiple_wins"] .st-title{font-size:76px;}
+.story[data-style="multiple_wins"] .st-bg{
+  background:
+    radial-gradient(70% 45% at 50% 0%, rgba(212,175,55,.3), transparent 70%),
+    radial-gradient(120% 100% at 50% 6%, #1f1405 0%, #12100a 50%, #050505 100%);
+}
+.story[data-style="multiple_wins"] .st-frame{
+  border:7px solid var(--accent);
+  background:linear-gradient(160deg, rgba(212,175,55,.16), rgba(0,0,0,.4));
+  box-shadow:0 0 70px rgba(212,175,55,.5), 0 26px 60px rgba(0,0,0,.6);
+}
+
+/* ---------- מסגרת מותאמת אישית (העלאה + גרירה/שינוי גודל) ---------- */
+.st-frame-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+.st-frame-overlay{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;}
+.st-photo-layer{position:absolute;left:50%;top:50%;width:760px;height:1000px;
+  transform-origin:center center;touch-action:none;cursor:grab;}
+.st-photo-layer.dragging{cursor:grabbing;}
+.st-photo-free{width:100%;height:100%;object-fit:contain;display:block;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);border-radius:8px;}
+.st-scrim-top{position:absolute;top:0;left:0;right:0;height:520px;pointer-events:none;
+  background:linear-gradient(to bottom, rgba(0,0,0,.62), transparent);}
+.st-scrim-bottom{position:absolute;bottom:0;left:0;right:0;height:460px;pointer-events:none;
+  background:linear-gradient(to top, rgba(0,0,0,.72), transparent);}
+.st-zone-top{position:absolute;top:0;left:0;right:0;padding:96px 84px 0;text-align:center;pointer-events:none;}
+.st-zone-bottom{position:absolute;bottom:0;left:0;right:0;padding:0 84px 80px;text-align:center;pointer-events:none;}
+.st-zone-top .st-amount{margin-top:16px;}
+.st-zone-top .st-badge{margin-top:24px;}
+</style>
+
+<!-- ============================================================
+     CSS של הממשק (App chrome) — ירוק/זהב
+     ============================================================ -->
+<style>
+  :root{
+    --green-deep:#063325;--green:#0a4d34;--green-light:#0f6a48;
+    --gold:#d4af37;--gold-light:#f5d76e;--paper:#f4f1e8;--ink:#0b1f18;
+    --radius:16px;--shadow:0 10px 30px rgba(0,0,0,.25);
+    --font:"Assistant","Rubik",-apple-system,"Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;font-family:var(--font);
+    background:radial-gradient(120% 80% at 50% 0%, #0c5e40 0%, var(--green) 42%, var(--green-deep) 100%);
+    color:var(--paper);min-height:100dvh;-webkit-font-smoothing:antialiased;}
+  .app{max-width:520px;margin:0 auto;
+    padding:max(env(safe-area-inset-top),14px) 14px calc(env(safe-area-inset-bottom) + 96px);}
+
+  header{text-align:center;padding:8px 0 12px;}
+  .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;}
+  .brand .coin{width:34px;height:34px;flex:0 0 34px;border-radius:50%;
+    background:linear-gradient(145deg,var(--gold-light),var(--gold));color:var(--green-deep);
+    display:grid;place-items:center;font-size:18px;font-weight:900;
+    box-shadow:0 4px 14px rgba(212,175,55,.4),inset 0 0 0 2px rgba(255,255,255,.3);}
+  .brand .name{font-size:19px;}
+  .brand .name b{color:var(--gold-light);}
+  .tagline{font-size:12.5px;opacity:.75;margin-top:4px;}
+
+  /* תצוגה מקדימה */
+  .preview-frame{position:relative;margin:0 auto;border-radius:var(--radius);
+    overflow:hidden;box-shadow:var(--shadow);background:#000;
+    border:1px solid rgba(212,175,55,.25);width:100%;}
+  /* מיקום אבסולוטי ב-left:0 כדי שקנה-המידה (transform-origin: top-left) לא ייצא
+     מחוץ למסך בהקשר RTL, שבו אלמנט רחב נדחף לימין */
+  #stage{position:absolute;top:0;left:0;transform-origin:top left;width:1080px;height:1920px;}
+
+  .card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);
+    border-radius:var(--radius);padding:14px;margin-top:14px;backdrop-filter:blur(6px);}
+  .card h2{margin:0 0 12px;font-size:13px;letter-spacing:.4px;color:var(--gold-light);
+    font-weight:700;display:flex;align-items:center;gap:8px;}
+  .card h2::before{content:"";width:6px;height:6px;border-radius:50%;
+    background:var(--gold);box-shadow:0 0 8px var(--gold);}
+
+  label.field{display:block;margin-bottom:12px;}
+  label.field:last-child{margin-bottom:0;}
+  .field-label{font-size:12.5px;opacity:.8;margin-bottom:6px;display:block;}
+
+  input[type="text"],input[type="number"],select,textarea{
+    width:100%;padding:13px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.14);
+    background:rgba(0,0,0,.22);color:var(--paper);font-family:var(--font);font-size:16px;
+    outline:none;transition:border-color .15s,box-shadow .15s;}
+  textarea{resize:vertical;min-height:64px;line-height:1.4;}
+  input:focus,select:focus,textarea:focus{border-color:var(--gold);
+    box-shadow:0 0 0 3px rgba(212,175,55,.18);}
+  input::placeholder,textarea::placeholder{color:rgba(244,241,232,.4);}
+  select{appearance:none;background-image:
+    url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%23f5d76e' stroke-width='2'><path d='M4 6l4 4 4-4'/></svg>");
+    background-repeat:no-repeat;background-position:left 14px center;padding-left:40px;}
+  select option{background:#0a3d2a;color:var(--paper);}
+  .hidden{display:none !important;}
+
+  .upload-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;
+    padding:16px;border-radius:12px;border:1.5px dashed rgba(212,175,55,.5);
+    background:rgba(212,175,55,.08);color:var(--gold-light);font-family:var(--font);
+    font-size:15px;font-weight:700;cursor:pointer;transition:background .15s;}
+  .upload-btn:active{background:rgba(212,175,55,.16);}
+  .upload-btn svg{width:22px;height:22px;}
+  .upload-btn.has-image{border-style:solid;border-color:rgba(212,175,55,.35);color:var(--paper);}
+  input[type="file"]{display:none;}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px;}
+  .chip{padding:9px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.16);
+    background:rgba(0,0,0,.18);color:var(--paper);font-family:var(--font);font-size:14px;
+    font-weight:600;cursor:pointer;transition:all .15s;}
+  .chip:active{transform:scale(.96);}
+  .chip.active{background:linear-gradient(145deg,var(--gold-light),var(--gold));
+    color:var(--green-deep);border-color:var(--gold-light);font-weight:800;
+    box-shadow:0 4px 14px rgba(212,175,55,.35);}
+
+  /* בורר סגנון */
+  .styles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+  .style-card{cursor:pointer;border-radius:14px;overflow:hidden;border:2px solid transparent;
+    background:rgba(0,0,0,.25);transition:border-color .15s,transform .1s;position:relative;
+    aspect-ratio:9/16;}
+  .style-card:active{transform:scale(.97);}
+  .style-card.active{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,175,55,.2);}
+  .style-card .sw{position:absolute;inset:0;overflow:hidden;}
+  .style-card .sw > div{position:absolute;top:0;left:0;}
+  .style-card .nm{position:absolute;bottom:0;left:0;right:0;
+    background:linear-gradient(transparent,rgba(0,0,0,.82));color:#fff;font-size:12px;
+    font-weight:700;text-align:center;padding:18px 4px 6px;}
+
+  .actionbar{position:fixed;bottom:0;left:0;right:0;z-index:20;
+    padding:12px 14px calc(env(safe-area-inset-bottom) + 12px);
+    background:linear-gradient(transparent,var(--green-deep) 40%);display:flex;gap:10px;
+    max-width:520px;margin:0 auto;}
+  .btn{flex:1;padding:15px;border-radius:14px;border:none;font-family:var(--font);
+    font-size:16px;font-weight:800;cursor:pointer;transition:transform .1s,opacity .15s;
+    display:flex;align-items:center;justify-content:center;gap:8px;}
+  .btn:active{transform:scale(.97);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn svg{width:20px;height:20px;}
+  .btn-primary{background:linear-gradient(145deg,var(--gold-light),var(--gold));
+    color:var(--green-deep);box-shadow:0 6px 20px rgba(212,175,55,.4);}
+  .btn-secondary{background:rgba(255,255,255,.12);color:var(--paper);
+    border:1px solid rgba(255,255,255,.18);flex:0 0 auto;width:56px;}
+
+  .hint{font-size:11.5px;opacity:.55;margin-top:8px;text-align:center;}
+  .note{font-size:11.5px;opacity:.7;margin-top:8px;line-height:1.5;
+    background:rgba(0,0,0,.2);border-radius:10px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);}
+
+  .toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--paper);padding:12px 20px;border-radius:999px;
+    font-size:14px;font-weight:600;box-shadow:var(--shadow);opacity:0;pointer-events:none;
+    transition:opacity .25s,transform .25s;z-index:50;border:1px solid rgba(212,175,55,.4);
+    max-width:90%;text-align:center;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* מיכל ייצוא מוסתר מהמסך */
+  #exportHolder{position:fixed;left:-99999px;top:0;}
+
+  /* אריח "הוסף מסגרת" + תמונות מסגרת מותאמות */
+  .style-card.add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border:1.5px dashed rgba(212,175,55,.5);background:rgba(212,175,55,.06);color:var(--gold-light);}
+  .style-card.add .plus{font-size:38px;font-weight:300;line-height:1;}
+  .style-card.add .txt{font-size:11.5px;font-weight:700;}
+  .style-card .frame-thumb{position:absolute;inset:0;background:#111 center/cover no-repeat;}
+  .style-card .frame-thumb.checker{
+    background-image:
+      linear-gradient(45deg,#2a2a2a 25%,transparent 25%,transparent 75%,#2a2a2a 75%),
+      linear-gradient(45deg,#2a2a2a 25%,#1c1c1c 25%,#1c1c1c 75%,#2a2a2a 75%);
+    background-size:20px 20px;background-position:0 0,10px 10px;}
+  .style-card .frame-thumb.checker img{width:100%;height:100%;object-fit:contain;}
+  .style-card .del{position:absolute;top:5px;left:5px;width:24px;height:24px;border-radius:50%;
+    background:rgba(0,0,0,.65);color:#fff;border:none;font-size:15px;line-height:1;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;z-index:3;}
+  .style-card .kind-tag{position:absolute;top:5px;right:5px;font-size:9.5px;font-weight:800;
+    padding:3px 7px;border-radius:999px;background:rgba(0,0,0,.6);color:var(--gold-light);z-index:3;}
+
+  /* פאנל התאמה */
+  .adjust-row{display:flex;align-items:center;gap:12px;margin-top:12px;}
+  .adjust-row input[type=range]{flex:1;accent-color:var(--gold);height:26px;}
+  .toggles{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;}
+  .toggle{display:flex;align-items:center;gap:7px;font-size:13px;font-weight:600;
+    background:rgba(0,0,0,.2);padding:8px 13px;border-radius:999px;
+    border:1px solid rgba(255,255,255,.12);cursor:pointer;user-select:none;}
+  .toggle input{accent-color:var(--gold);width:16px;height:16px;}
+
+  /* מודאל בחירת סוג מסגרת */
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;
+    display:flex;align-items:center;justify-content:center;padding:22px;}
+  .modal{background:#0a3d2a;border:1px solid rgba(212,175,55,.4);border-radius:18px;padding:22px;
+    max-width:360px;width:100%;text-align:center;box-shadow:var(--shadow);}
+  .modal h3{margin:0 0 6px;color:var(--gold-light);font-size:17px;}
+  .modal p{margin:0 0 18px;font-size:13px;opacity:.82;line-height:1.5;}
+  .modal .m-btns{display:flex;flex-direction:column;gap:10px;}
+  .modal .m-btn{padding:15px;border-radius:12px;border:1px solid rgba(255,255,255,.15);
+    background:rgba(255,255,255,.08);color:var(--paper);font-family:var(--font);font-size:15px;
+    font-weight:700;cursor:pointer;text-align:center;line-height:1.4;}
+  .modal .m-btn small{display:block;font-size:11.5px;font-weight:500;opacity:.7;margin-top:3px;}
+  .modal .m-btn.primary{background:linear-gradient(145deg,var(--gold-light),var(--gold));
+    color:var(--green-deep);border:none;}
+  .modal .m-btn.ghost{background:transparent;opacity:.7;border-color:transparent;}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <span class="coin">₪</span>
+      <span class="name">מפגש הספורט <b>טבריה</b></span>
+    </div>
+    <div class="tagline">יצירת סטורי זכיות 1080×1920 · מהיר, מקומי, פרטי</div>
+  </header>
+
+  <!-- תצוגה מקדימה חיה -->
+  <div class="preview-frame" id="previewFrame">
+    <div id="stage"><div id="story" class="story" data-style="luxury_gold"></div></div>
+  </div>
+
+  <!-- העלאת תמונה -->
+  <div class="card">
+    <h2>תמונת הזכייה</h2>
+    <input type="file" id="fileInput" accept="image/*" />
+    <button class="upload-btn" id="uploadBtn" type="button">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <path d="M12 15V3m0 0L8 7m4-4l4 4"/><path d="M3 15v4a2 2 0 002 2h14a2 2 0 002-2v-4"/>
+      </svg>
+      <span id="uploadLabel">בחר / צלם תמונה</span>
+    </button>
+    <div class="note">התמונה שלך נשארת <b>שלמה וללא שינוי</b> — היא רק ממוקמת בתוך העיצוב (object-fit: contain, בלי חיתוך). לא נוגעים בטפסים, קבלות, סכומים, QR, ברקודים או קלפים.</div>
+  </div>
+
+  <!-- פרטי זכייה -->
+  <div class="card">
+    <h2>פרטי הזכייה</h2>
+    <label class="field">
+      <span class="field-label">סכום זכייה (₪) — רשות</span>
+      <input type="number" id="amount" inputmode="numeric" placeholder="לדוגמה: 25000" />
+    </label>
+    <label class="field">
+      <span class="field-label">סוג זכייה</span>
+      <div class="chips" id="gameTypes"></div>
+    </label>
+  </div>
+
+  <!-- סגנון עיצוב -->
+  <div class="card">
+    <h2>בחירת סגנון עיצוב</h2>
+    <div class="styles" id="styles"></div>
+    <div class="note">אפשר לייצר מסגרות/רקעים ב-AI (Midjourney וכו') בגודל 1080×1920 ולהעלות דרך "➕ הוסף מסגרת". טיפ: בקש מרכז פנוי לתמונה וקצוות מעוטרים. המסגרות נשמרות במכשיר.</div>
+  </div>
+
+  <!-- התאמת מסגרת מותאמת (מוצג רק במצב מסגרת מותאמת) -->
+  <div class="card hidden" id="adjustCard">
+    <h2>התאמת מסגרת מותאמת</h2>
+    <div style="font-size:12.5px;opacity:.8;line-height:1.5;">גרור את התמונה למיקום הרצוי בתוך המסגרת. שנה גודל עם המחוון, בגלגלת העכבר, או בצביטה בשתי אצבעות.</div>
+    <div class="adjust-row">
+      <span style="font-size:13px;opacity:.85;min-width:34px;">גודל</span>
+      <input type="range" id="scaleSlider" min="0.3" max="3" step="0.01" value="1" />
+      <button class="chip" id="resetPhoto" type="button">מרכז</button>
+    </div>
+    <div style="font-size:12.5px;opacity:.8;margin-top:14px;">הצג/הסתר טקסטים (אם המסגרת כבר כוללת אזורי טקסט):</div>
+    <div class="toggles" id="textToggles"></div>
+  </div>
+
+  <!-- כותרת -->
+  <div class="card">
+    <h2>כותרת</h2>
+    <select id="titleSelect"></select>
+    <textarea id="titleCustom" class="hidden" maxlength="90" placeholder="כתוב כותרת משלך..." style="margin-top:10px;"></textarea>
+  </div>
+
+  <!-- משפט סיום -->
+  <div class="card">
+    <h2>משפט סיום / קריאה לפעולה</h2>
+    <select id="ctaSelect"></select>
+    <textarea id="ctaCustom" class="hidden" maxlength="90" placeholder="כתוב משפט סיום משלך..." style="margin-top:10px;"></textarea>
+    <div class="note">שים לב: אין להבטיח זכייה ודאית (למשל "בטוח תזכו" / "זכייה מובטחת"). המשפטים המוכנים מנוסחים בהתאם.</div>
+  </div>
+</div>
+
+<!-- סרגל פעולות -->
+<div class="actionbar">
+  <button class="btn btn-primary" id="createBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 3v4m0 10v4m9-9h-4M7 12H3m14.5-6.5l-3 3m-5 5l-3 3m11 0l-3-3m-5-5l-3-3"/>
+    </svg>
+    צור סטורי
+  </button>
+  <button class="btn btn-primary" id="downloadBtn" disabled>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2"/>
+    </svg>
+    הורדה
+  </button>
+  <button class="btn btn-secondary" id="shareBtn" disabled title="שיתוף">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+      <path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/>
+    </svg>
+  </button>
+</div>
+
+<div class="toast" id="toast"></div>
+<div id="exportHolder"></div>
+<input type="file" id="frameInput" accept="image/*" style="display:none;" />
+<div id="modalHost"></div>
+
+<script>
+/* ============================================================
+   מפגש הספורט טבריה — יצירת סטורי זכיות
+   ארכיטקטורה: הסטורי נבנה כ-DOM אמיתי (RTL מובטח, התמונה כשכבה
+   שלמה עם object-fit:contain). הייצוא ל-PNG נעשה דרך SVG
+   foreignObject — הדפדפן מרנדר את ה-HTML בעצמו, כך שהעברית
+   לא מתהפכת והתמונה המקורית לא משתנה.
+   ============================================================ */
+
+const W = 1080, H = 1920;
+const $ = (id) => document.getElementById(id);
+
+// ---------- נתונים ----------
+const GAME_TYPES = [
+  { id: 'chance',  name: "צ'אנס" },
+  { id: 'hishgad', name: 'חיש גד' },
+  { id: 'winner',  name: 'ווינר' },
+  { id: 'loto',    name: 'לוטו' },
+  { id: 'toto',    name: 'טוטו' },
+  { id: 'multi',   name: 'כמה זכיות' },
+  { id: 'other',   name: 'אחר' },
+];
+
+const STYLES = [
+  { id: 'luxury_gold',        name: 'שחור זהב יוקרתי' },
+  { id: 'chance_gold',        name: "צ'אנס חגיגי" },
+  { id: 'hishgad_festive',    name: 'חיש גד צבעוני' },
+  { id: 'winner_sport',       name: 'ווינר ספורטיבי' },
+  { id: 'authenticity_frame', name: 'מסגרת אמינות' },
+  { id: 'multiple_wins',      name: 'יום של זכיות' },
+];
+
+const TITLES = [
+  'חלק קטן ממה שהיה היום במפגש הספורט טבריה',
+  'עוד זכייה יפה במפגש הספורט טבריה',
+  'יום של זכיות במפגש הספורט טבריה',
+  'ערב טוב ממפגש הספורט טבריה',
+  'בוקר טוב ממפגש הספורט טבריה',
+  'ממשיכים לפרגן לזוכים',
+  'עוד לקוח יצא מחויך',
+  'זכייה יפה אצלנו בטבריה',
+  'מזל טוב לזוכה',
+  'עוד טופס מנצח במפגש הספורט טבריה',
+  'גירוד קטן, חיוך גדול',
+  'עוד זכייה מתוקה אצלנו',
+  'יום של מזל במפגש הספורט טבריה',
+  'הזכיות ממשיכות להגיע',
+  'אצלנו במפגש הספורט טבריה מפרגנים לזוכים',
+];
+
+const CTAS = [
+  'אולי הזוכה הבא זה אתם',
+  'מחכים לכם במפגש הספורט טבריה',
+  'בואו לנסות את המזל',
+  'בהצלחה לכל המשתתפים',
+  'נתראה במפגש הספורט טבריה',
+  'שיהיה לכולם בהצלחה',
+  'ממשיכים לחלק חיוכים',
+  'אצלנו תמיד מפרגנים לזוכים',
+  'תבואו עם מזל טוב',
+  'עוד יום שמח אצלנו',
+];
+
+const CUSTOM = '__custom__';
+
+// ---------- מצב ----------
+const state = {
+  imageData: null,               // Data URL של התמונה המקורית (ללא שינוי)
+  amount: '',
+  gameType: 'chance',
+  style: 'luxury_gold',          // סגנון מובנה נבחר
+  customId: null,                // מזהה מסגרת מותאמת נבחרת (גובר על style)
+  title: TITLES[1],
+  cta: CTAS[0],
+  frames: [],                    // ספריית מסגרות מותאמות {id,name,type:'bg'|'overlay',data}
+  photoTransform: { x: 0, y: 0, scale: 1 },   // מיקום/גודל התמונה במצב מסגרת מותאמת
+  textOn: { title: true, amount: true, badge: true, cta: true, brand: true },
+};
+
+let previewScale = 1;            // קנה המידה של התצוגה המקדימה (לעיבוד קואורדינטות גרירה)
+
+// ---------- ספריית מסגרות (localStorage) ----------
+function loadFrames() {
+  try { return JSON.parse(localStorage.getItem('zt_frames') || '[]'); } catch (e) { return []; }
+}
+function saveFrames() {
+  try { localStorage.setItem('zt_frames', JSON.stringify(state.frames)); return true; }
+  catch (e) { return false; } // חריגת מכסה
+}
+function getFrame(id) {
+  return state.frames.find((f) => f.id === id) || state.builtinFrames.find((f) => f.id === id);
+}
+function isCustom() { return !!(state.customId && getFrame(state.customId)); }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+state.frames = loadFrames();
+
+// ---------- מסגרות מובנות מתיקיית assets/frames (טעינה אוטומטית) ----------
+// האפליקציה טוענת את הרשימה מ-assets/frames/frames.json (נוצר ע"י build-frames-manifest.ps1).
+// כדי להוסיף מסגרות: שים קבצים בתיקייה והרץ את הסקריפט — הן יופיעו אוטומטית, בלי תלות בשם.
+state.builtinFrames = [];
+
+// שמות תצוגה בעברית ל-6 המסגרות הראשיות (השאר מקבלות "מסגרת N")
+const FRAME_NAME_MAP = {
+  '01_black_gold_luxury.png': 'שחור-זהב יוקרתי',
+  '02_green_gold_brand.png': 'ירוק-זהב',
+  '03_chance_cards_gold.png': "צ'אנס",
+  '04_colorful_hishgad.png': 'חיש גד',
+  '05_winner_sport_blue_gold.png': 'ווינר',
+  '06_minimal_trust_gold_frame.png': 'אמינות',
+};
+
+// המרת קובץ מסגרת מובנה ל-Data URL (נחוץ לייצוא foreignObject; נטען פעם אחת בעצלתיים)
+function ensureFrameData(f) {
+  if (f.data) return Promise.resolve(f.data);
+  return fetch(encodeURI(f.file)) // קידוד לנתיבים עם רווחים/תווים מיוחדים
+    .then((r) => { if (!r.ok) throw new Error('404'); return r.blob(); })
+    .then((blob) => new Promise((res) => {
+      const fr = new FileReader();
+      fr.onload = () => { f.data = fr.result; res(f.data); };
+      fr.readAsDataURL(blob);
+    }));
+}
+
+// טעינת רשימת המסגרות המובנות מהמניפסט
+function loadBuiltinFrames() {
+  return fetch('assets/frames/frames.json', { cache: 'no-store' })
+    .then((r) => (r.ok ? r.json() : []))
+    .then((list) => {
+      let n = 0;
+      state.builtinFrames = (list || []).map((it) => {
+        const name = FRAME_NAME_MAP[it.file] || ('מסגרת ' + (++n));
+        return {
+          id: 'b_' + it.file, name, type: it.type || 'bg',
+          file: 'assets/frames/' + it.file,           // מלא — נטען רק בבחירה (לתצוגה + ייצוא)
+          thumb: it.thumb ? 'assets/frames/' + it.thumb : ('assets/frames/' + it.file), // מוקטן לגריד
+          data: null,
+        };
+      });
+      if (state.builtinFrames.length) { renderStylesGrid(); fitScales(); renderSwatches(); }
+    })
+    .catch(() => {});
+}
+
+// ---------- אלמנטים ----------
+const story = $('story');
+const stage = $('stage');
+const previewFrame = $('previewFrame');
+const fileInput = $('fileInput');
+const uploadBtn = $('uploadBtn');
+const uploadLabel = $('uploadLabel');
+const amountInput = $('amount');
+const titleSelect = $('titleSelect');
+const titleCustom = $('titleCustom');
+const ctaSelect = $('ctaSelect');
+const ctaCustom = $('ctaCustom');
+const downloadBtn = $('downloadBtn');
+const shareBtn = $('shareBtn');
+const createBtn = $('createBtn');
+const toastEl = $('toast');
+
+// ---------- בניית פקדים ----------
+// סוגי זכייה
+const gtEl = $('gameTypes');
+GAME_TYPES.forEach((g) => {
+  const c = document.createElement('button');
+  c.type = 'button';
+  c.className = 'chip' + (g.id === state.gameType ? ' active' : '');
+  c.textContent = g.name;
+  c.dataset.id = g.id;
+  c.addEventListener('click', () => {
+    state.gameType = g.id;
+    gtEl.querySelectorAll('.chip').forEach((x) =>
+      x.classList.toggle('active', x.dataset.id === g.id));
+    // התאמת סגנון אוטומטית לפי סוג הזכייה (רמז נוח, לא כפייה)
+    autoStyleFor(g.id);
+    renderStory();
+  });
+  gtEl.appendChild(c);
+});
+
+function autoStyleFor(gameId) {
+  const map = {
+    chance: 'chance_gold', hishgad: 'hishgad_festive',
+    winner: 'winner_sport', toto: 'winner_sport',
+    multi: 'multiple_wins',
+  };
+  if (isCustom()) return; // אל תוציא את המשתמש ממסגרת מותאמת שבחר
+  const s = map[gameId];
+  if (s && s !== state.style) selectBuiltin(s);
+}
+
+// סגנונות + מסגרות מותאמות
+const stylesEl = $('styles');
+let swatchStages = {};
+
+// בונה מחדש את גריד הסגנונות: 6 מובנים + מסגרות מותאמות + אריח הוספה
+function renderStylesGrid() {
+  stylesEl.innerHTML = '';
+  swatchStages = {};
+
+  // סגנונות מובנים (תצוגה מוקטנת אמיתית)
+  STYLES.forEach((s) => {
+    const card = document.createElement('div');
+    card.className = 'style-card';
+    card.dataset.kind = 'builtin';
+    card.dataset.id = s.id;
+    const sw = document.createElement('div');
+    sw.className = 'sw';
+    const inner = document.createElement('div');
+    inner.style.transformOrigin = 'top left';
+    inner.style.width = W + 'px';
+    inner.style.height = H + 'px';
+    const mini = document.createElement('div');
+    mini.className = 'story';
+    mini.setAttribute('data-style', s.id);
+    inner.appendChild(mini);
+    sw.appendChild(inner);
+    card.appendChild(sw);
+    const nm = document.createElement('div');
+    nm.className = 'nm';
+    nm.textContent = s.name;
+    card.appendChild(nm);
+    card.addEventListener('click', () => selectBuiltin(s.id));
+    stylesEl.appendChild(card);
+    swatchStages[s.id] = { mini, inner, sw };
+  });
+
+  // מסגרות מובנות (מהתיקייה) — ללא מחיקה
+  state.builtinFrames.forEach((f) => stylesEl.appendChild(buildFrameCard(f, false)));
+
+  // מסגרות מותאמות מהספרייה (localStorage) — עם מחיקה
+  state.frames.forEach((f) => stylesEl.appendChild(buildFrameCard(f, true)));
+
+  // אריח "הוסף מסגרת"
+  const add = document.createElement('div');
+  add.className = 'style-card add';
+  add.innerHTML = '<span class="plus">＋</span><span class="txt">הוסף מסגרת</span>';
+  add.addEventListener('click', () => frameInput.click());
+  stylesEl.appendChild(add);
+
+  markActiveStyle();
+}
+
+function markActiveStyle() {
+  stylesEl.querySelectorAll('.style-card').forEach((c) => {
+    if (!c.dataset.kind) { c.classList.remove('active'); return; }
+    const on = c.dataset.kind === 'builtin'
+      ? (!state.customId && c.dataset.id === state.style)
+      : (state.customId === c.dataset.id);
+    c.classList.toggle('active', on);
+  });
+}
+
+// כרטיס מסגרת (מובנה או מותאם). canDelete=false למובנות.
+function buildFrameCard(f, canDelete) {
+  const card = document.createElement('div');
+  card.className = 'style-card';
+  card.dataset.kind = 'frame';
+  card.dataset.id = f.id;
+  // לגריד משתמשים ב-thumbnail הקטן (מובנה) או ב-Data URL (מהעלאה). נתיבי קבצים עם
+  // רווחים/פסיקים/סוגריים חייבים קידוד URL + מרכאות ב-CSS.
+  const raw = f.thumb || f.data || f.file;
+  const src = raw.startsWith('data:') ? raw : encodeURI(raw);
+  const thumb = document.createElement('div');
+  if (f.type === 'overlay') {
+    thumb.className = 'frame-thumb checker';
+    const im = document.createElement('img'); im.src = src; thumb.appendChild(im);
+  } else {
+    thumb.className = 'frame-thumb';
+    thumb.style.backgroundImage = `url("${src}")`;
+  }
+  card.appendChild(thumb);
+  const tag = document.createElement('div');
+  tag.className = 'kind-tag';
+  tag.textContent = f.type === 'overlay' ? 'שקופה' : 'רקע';
+  card.appendChild(tag);
+  if (canDelete) {
+    const del = document.createElement('button');
+    del.className = 'del'; del.type = 'button'; del.textContent = '✕'; del.title = 'מחק מסגרת';
+    del.addEventListener('click', (e) => { e.stopPropagation(); deleteFrame(f.id); });
+    card.appendChild(del);
+  }
+  const nm = document.createElement('div');
+  nm.className = 'nm'; nm.textContent = f.name || 'מסגרת';
+  card.appendChild(nm);
+  card.addEventListener('click', () => selectCustom(f.id));
+  return card;
+}
+
+function toggleAdjustCard() {
+  $('adjustCard').classList.toggle('hidden', !isCustom());
+}
+
+function selectBuiltin(id) {
+  state.customId = null;
+  state.style = id;
+  markActiveStyle();
+  toggleAdjustCard();
+  renderStory();
+}
+
+function selectCustom(id) {
+  const f = getFrame(id);
+  if (!f) return;
+  state.customId = id;
+  markActiveStyle();
+  toggleAdjustCard();
+  syncScaleSlider();
+  if (!f.data && f.file) {
+    // מסגרת מובנה — טען את הקובץ (Data URL) פעם אחת, ואז רנדר
+    showToast('טוען מסגרת...');
+    ensureFrameData(f)
+      .then(() => renderStory())
+      .catch(() => showToast('שגיאה בטעינת המסגרת'));
+  } else {
+    renderStory();
+  }
+}
+
+// כותרת + CTA (dropdown עם "מותאם אישית")
+function fillSelect(sel, items, includeCustomLabel) {
+  items.forEach((t) => {
+    const o = document.createElement('option');
+    o.value = t; o.textContent = t;
+    sel.appendChild(o);
+  });
+  const o = document.createElement('option');
+  o.value = CUSTOM; o.textContent = includeCustomLabel;
+  sel.appendChild(o);
+}
+fillSelect(titleSelect, TITLES, 'כותרת מותאמת אישית ✎');
+fillSelect(ctaSelect, CTAS, 'משפט מותאם אישית ✎');
+titleSelect.value = state.title;
+ctaSelect.value = state.cta;
+
+titleSelect.addEventListener('change', () => {
+  if (titleSelect.value === CUSTOM) {
+    titleCustom.classList.remove('hidden');
+    state.title = titleCustom.value.trim();
+    titleCustom.focus();
+  } else {
+    titleCustom.classList.add('hidden');
+    state.title = titleSelect.value;
+  }
+  renderStory();
+});
+titleCustom.addEventListener('input', () => { state.title = titleCustom.value.trim(); renderStory(); });
+
+ctaSelect.addEventListener('change', () => {
+  if (ctaSelect.value === CUSTOM) {
+    ctaCustom.classList.remove('hidden');
+    state.cta = ctaCustom.value.trim();
+    ctaCustom.focus();
+  } else {
+    ctaCustom.classList.add('hidden');
+    state.cta = ctaSelect.value;
+  }
+  renderStory();
+});
+ctaCustom.addEventListener('input', () => { state.cta = ctaCustom.value.trim(); renderStory(); });
+
+amountInput.addEventListener('input', (e) => { state.amount = e.target.value; renderStory(); });
+
+// ---------- העלאת תמונה (נשמרת כ-Data URL, ללא שינוי פיקסלים) ----------
+uploadBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    state.imageData = reader.result; // Data URL מקורי
+    state.photoTransform = { x: 0, y: 0, scale: 1 }; // איפוס מיקום/גודל לתמונה חדשה
+    uploadBtn.classList.add('has-image');
+    uploadLabel.textContent = 'החלף תמונה';
+    downloadBtn.disabled = false;
+    shareBtn.disabled = false;
+    syncScaleSlider();
+    renderStory();
+  };
+  reader.readAsDataURL(file); // ללא עיבוד — התמונה נשמרת כפי שהיא
+});
+
+// ============================================================
+//   בניית הסטורי (DOM)
+// ============================================================
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function gameName(id) {
+  const g = GAME_TYPES.find((x) => x.id === id);
+  return g ? g.name : '';
+}
+
+function formatAmount(v) {
+  const n = Number(v);
+  if (!n || n <= 0) return '';
+  return n.toLocaleString('he-IL');
+}
+
+// RNG דטרמיניסטי (זרע לפי סגנון) — קונפטי יציב בין רינדורים
+function makeRng(seed) {
+  let s = seed % 2147483647; if (s <= 0) s += 2147483646;
+  return () => (s = (s * 16807) % 2147483647) / 2147483647;
+}
+function hashStr(str) {
+  let h = 5381; for (let i = 0; i < str.length; i++) h = ((h << 5) + h + str.charCodeAt(i)) | 0;
+  return Math.abs(h) || 1;
+}
+
+const PALETTES = {
+  luxury_gold:        ['#d4af37', '#f5d76e', '#b8860b', '#ffffff'],
+  chance_gold:        ['#d4af37', '#f7e08a', '#b8860b', '#ffffff'],
+  hishgad_festive:    ['#ffd166', '#ef476f', '#06d6a0', '#118ab2', '#c0c0c0', '#f5d76e'],
+  winner_sport:       ['#d4af37', '#f5d76e', '#ffffff', '#6ea0ff'],
+  multiple_wins:      ['#d4af37', '#f5d76e', '#b8860b', '#ffffff'],
+  authenticity_frame: ['#d4af37', '#f5d76e'],
+};
+
+function confettiHTML(style) {
+  const pal = PALETTES[style] || PALETTES.luxury_gold;
+  const r = makeRng(hashStr(style) + 101);
+  const n = style === 'hishgad_festive' ? 64 : 46;
+  let h = '';
+  for (let i = 0; i < n; i++) {
+    const x = (r() * 100).toFixed(2);
+    const y = (r() * 100).toFixed(2);
+    const sz = (7 + r() * 15).toFixed(1);
+    const rot = (r() * 360).toFixed(0);
+    const col = pal[Math.floor(r() * pal.length)];
+    const op = (0.35 + r() * 0.5).toFixed(2);
+    const round = r() > 0.5 ? '50%' : '2px';
+    h += `<span class="st-confetti" style="left:${x}%;top:${y}%;width:${sz}px;height:${(sz*0.5).toFixed(1)}px;background:${col};opacity:${op};border-radius:${round};transform:rotate(${rot}deg);"></span>`;
+  }
+  return h;
+}
+
+// אלמנטים דקורטיביים ייחודיים לכל סגנון
+function ornamentsHTML(style) {
+  if (style === 'chance_gold') {
+    const suits = ['♠', '♣', '♥', '♦'];
+    const r = makeRng(hashStr('suits'));
+    let h = '';
+    for (let i = 0; i < 10; i++) {
+      const x = (r() * 100).toFixed(1), y = (r() * 100).toFixed(1);
+      const sz = (44 + r() * 70).toFixed(0);
+      const op = (0.06 + r() * 0.12).toFixed(2);
+      const col = (i % 4 === 2 || i % 4 === 3) ? '#c96f6f' : '#d4af37';
+      h += `<span style="position:absolute;left:${x}%;top:${y}%;font-size:${sz}px;color:${col};opacity:${op};transform:rotate(${(r()*40-20).toFixed(0)}deg);">${suits[i%4]}</span>`;
+    }
+    return h;
+  }
+  if (style === 'winner_sport') {
+    // קרני תאורת אצטדיון + כדורגל בפינה
+    const beams = `
+      <div style="position:absolute;top:-8%;left:12%;width:150px;height:1500px;background:linear-gradient(to bottom,rgba(150,190,255,.35),transparent);transform:rotate(20deg);filter:blur(8px);"></div>
+      <div style="position:absolute;top:-8%;left:34%;width:110px;height:1500px;background:linear-gradient(to bottom,rgba(150,190,255,.25),transparent);transform:rotate(10deg);filter:blur(8px);"></div>
+      <div style="position:absolute;top:-8%;right:16%;width:150px;height:1500px;background:linear-gradient(to bottom,rgba(150,190,255,.3),transparent);transform:rotate(-18deg);filter:blur(8px);"></div>`;
+    const ball = `
+      <svg viewBox="0 0 100 100" style="position:absolute;bottom:200px;right:-30px;width:260px;height:260px;opacity:.12;">
+        <circle cx="50" cy="50" r="46" fill="none" stroke="#fff" stroke-width="3"/>
+        <polygon points="50,30 62,40 57,55 43,55 38,40" fill="#fff"/>
+        <path d="M50 4 L50 30 M4 50 L38 40 M96 50 L62 40 M28 92 L43 55 M72 92 L57 55" stroke="#fff" stroke-width="3" fill="none"/>
+      </svg>`;
+    return beams + ball;
+  }
+  if (style === 'hishgad_festive') {
+    const r = makeRng(hashStr('sparkle'));
+    let h = '';
+    for (let i = 0; i < 14; i++) {
+      const x = (r() * 100).toFixed(1), y = (r() * 100).toFixed(1);
+      const sz = (26 + r() * 44).toFixed(0);
+      const op = (0.4 + r() * 0.5).toFixed(2);
+      const col = r() > 0.5 ? '#fff' : '#f5d76e';
+      h += `<svg viewBox="0 0 24 24" style="position:absolute;left:${x}%;top:${y}%;width:${sz}px;height:${sz}px;opacity:${op};"><path d="M12 0l2.4 8.4L24 12l-9.6 3.6L12 24l-2.4-8.4L0 12l9.6-3.6z" fill="${col}"/></svg>`;
+    }
+    return h;
+  }
+  return '';
+}
+
+function buildStoryDOM() {
+  if (isCustom()) return buildCustomStoryDOM();
+
+  const s = state;
+  story.removeAttribute('data-mode');
+  story.setAttribute('data-style', s.style);
+  story.setAttribute('dir', 'rtl');
+
+  const amount = formatAmount(s.amount);
+  const badge = gameName(s.gameType);
+  const isMulti = s.style === 'multiple_wins';
+  const isAuth = s.style === 'authenticity_frame';
+
+  // תמונה — img רגיל, ללא שינוי, object-fit:contain
+  const imgHtml = s.imageData
+    ? `<img class="st-photo" src="${s.imageData}" alt="תמונת זכייה" />`
+    : `<div class="st-photo-empty">כאן תופיע תמונת הזכייה</div>`;
+
+  const amountHtml = amount
+    ? `${isMulti ? '<div class="st-amount-label">סכום כולל</div>' : ''}
+       <div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>`
+    : '';
+
+  const badgeHtml = badge ? `<div class="st-badge">${escapeHtml(badge)}</div>` : '';
+  const verifiedHtml = isAuth ? `<div class="st-verified">✔ תמונה אמיתית · לא נערכה</div>` : '';
+
+  story.innerHTML = `
+    <div class="st-bg"></div>
+    <div class="st-decor">${decorHTML(s.style)}</div>
+    <div class="st-content">
+      ${s.title ? `<div class="st-title">${escapeHtml(s.title)}</div>` : ''}
+      ${amountHtml}
+      ${badgeHtml}
+      <div class="st-frame">${imgHtml}</div>
+      ${verifiedHtml}
+      ${s.cta ? `<div class="st-cta">${escapeHtml(s.cta)}</div>` : ''}
+      <div class="st-brand">
+        <div class="b1">מפגש הספורט טבריה</div>
+        <div class="b2">שד' ספיר, טבריה</div>
+      </div>
+    </div>`;
+}
+
+// ---------- מצב מסגרת מותאמת אישית ----------
+function buildCustomStoryDOM() {
+  const s = state;
+  const f = getFrame(s.customId);
+  story.setAttribute('data-style', 'custom');
+  story.setAttribute('data-mode', 'custom');
+  story.setAttribute('dir', 'rtl');
+
+  const amount = formatAmount(s.amount);
+  const badge = gameName(s.gameType);
+  const t = s.photoTransform;
+  const to = s.textOn;
+
+  const fsrc = f.data || encodeURI(f.file); // Data URL (מועדף, נחוץ לייצוא) או נתיב קובץ מקודד כגיבוי
+  const bgFrame = f.type === 'bg' ? `<img class="st-frame-bg" src="${fsrc}" alt="" />` : '';
+  const overlay = f.type === 'overlay' ? `<img class="st-frame-overlay" src="${fsrc}" alt="" />` : '';
+
+  const photo = s.imageData
+    ? `<div class="st-photo-layer" style="transform:translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) scale(${t.scale});"><img class="st-photo-free" src="${s.imageData}" alt="תמונת זכייה" /></div>`
+    : `<div class="st-photo-layer" style="transform:translate(-50%,-50%);"><div class="st-photo-empty" style="width:100%;height:100%;">העלה תמונה</div></div>`;
+
+  const showTitle = to.title && s.title;
+  const showAmount = to.amount && amount;
+  const showBadge = to.badge && badge;
+  const showCta = to.cta && s.cta;
+  const showBrand = to.brand;
+  const topOn = showTitle || showAmount || showBadge;
+  const botOn = showCta || showBrand;
+
+  const topHtml = `
+    ${showTitle ? `<div class="st-title">${escapeHtml(s.title)}</div>` : ''}
+    ${showAmount ? `<div class="st-amount"><span class="cur">₪</span>${escapeHtml(amount)}</div>` : ''}
+    ${showBadge ? `<div class="st-badge">${escapeHtml(badge)}</div>` : ''}`;
+  const botHtml = `
+    ${showCta ? `<div class="st-cta">${escapeHtml(s.cta)}</div>` : ''}
+    ${showBrand ? `<div class="st-brand"><div class="b1">מפגש הספורט טבריה</div><div class="b2">שד' ספיר, טבריה</div></div>` : ''}`;
+
+  story.innerHTML = `
+    <div class="st-bg"></div>
+    ${bgFrame}
+    ${photo}
+    ${overlay}
+    ${topOn ? '<div class="st-scrim-top"></div>' : ''}
+    ${botOn ? '<div class="st-scrim-bottom"></div>' : ''}
+    ${topOn ? `<div class="st-zone-top">${topHtml}</div>` : ''}
+    ${botOn ? `<div class="st-zone-bottom">${botHtml}</div>` : ''}`;
+
+  attachPhotoInteractions();
+}
+
+// החלת הטרנספורם ישירות (בלי rebuild) — לגרירה חלקה
+function applyPhotoTransform() {
+  const el = story.querySelector('.st-photo-layer');
+  if (!el) return;
+  const t = state.photoTransform;
+  el.style.transform = `translate(calc(-50% + ${t.x}px), calc(-50% + ${t.y}px)) scale(${t.scale})`;
+}
+
+function syncScaleSlider() {
+  const sl = $('scaleSlider');
+  if (sl) sl.value = state.photoTransform.scale;
+}
+
+// גרירה + צביטה (pinch) + גלגלת על התמונה בתוך המסגרת המותאמת
+function attachPhotoInteractions() {
+  const el = story.querySelector('.st-photo-layer');
+  if (!el || !state.imageData) return;
+  const pts = new Map();
+  let start = null;
+
+  const dist = () => {
+    if (pts.size < 2) return 0;
+    const a = [...pts.values()];
+    return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y);
+  };
+  const resetStart = () => {
+    const p = [...pts.values()][0];
+    start = {
+      x: state.photoTransform.x, y: state.photoTransform.y, scale: state.photoTransform.scale,
+      cx: p ? p.x : 0, cy: p ? p.y : 0, dist: dist(),
+    };
+  };
+
+  el.addEventListener('pointerdown', (e) => {
+    el.setPointerCapture(e.pointerId);
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    el.classList.add('dragging');
+    resetStart();
+  });
+  el.addEventListener('pointermove', (e) => {
+    if (!pts.has(e.pointerId)) return;
+    pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size >= 2) {
+      const d = dist();
+      if (start.dist > 0) {
+        state.photoTransform.scale = clamp(start.scale * (d / start.dist), 0.2, 4);
+        syncScaleSlider();
+      }
+    } else {
+      const p = [...pts.values()][0];
+      state.photoTransform.x = start.x + (p.x - start.cx) / previewScale;
+      state.photoTransform.y = start.y + (p.y - start.cy) / previewScale;
+    }
+    applyPhotoTransform();
+  });
+  const end = (e) => {
+    pts.delete(e.pointerId);
+    if (pts.size === 0) el.classList.remove('dragging');
+    if (pts.size >= 1) resetStart(); // המשך גרירה חלק אחרי הרמת אצבע
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+  el.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const f = e.deltaY < 0 ? 1.06 : 0.94;
+    state.photoTransform.scale = clamp(state.photoTransform.scale * f, 0.2, 4);
+    applyPhotoTransform(); syncScaleSlider();
+  }, { passive: false });
+}
+
+// ---------- העלאת / עיבוד / מחיקת מסגרות ----------
+const frameInput = $('frameInput');
+
+frameInput.addEventListener('change', (e) => {
+  const file = e.target.files && e.target.files[0];
+  frameInput.value = '';
+  if (!file) return;
+  openFrameTypeModal(file);
+});
+
+function openFrameTypeModal(file) {
+  const host = $('modalHost');
+  host.innerHTML = `
+    <div class="modal-backdrop" id="mBackdrop">
+      <div class="modal">
+        <h3>איך להשתמש במסגרת?</h3>
+        <p>בחר כיצד המסגרת שהעלית תשתלב עם תמונת הזכייה.</p>
+        <div class="m-btns">
+          <button class="m-btn primary" data-type="bg">רקע מאחורי התמונה<small>תמונה מלאה שהתמונה שלך יושבת עליה</small></button>
+          <button class="m-btn" data-type="overlay">מסגרת שקופה מעל<small>PNG עם חלון שקוף — התמונה מציצה מבעד</small></button>
+          <button class="m-btn ghost" data-type="cancel">ביטול</button>
+        </div>
+      </div>
+    </div>`;
+  host.querySelectorAll('.m-btn').forEach((b) => {
+    b.addEventListener('click', () => {
+      const type = b.dataset.type;
+      host.innerHTML = '';
+      if (type === 'cancel') return;
+      addFrame(file, type);
+    });
+  });
+  $('mBackdrop').addEventListener('click', (ev) => { if (ev.target.id === 'mBackdrop') host.innerHTML = ''; });
+}
+
+function processFrameImage(file, type) {
+  return new Promise((res, rej) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = W; c.height = H;
+      const x = c.getContext('2d');
+      if (type === 'bg') {
+        // cover — ממלא את כל הפריים
+        const r = Math.max(W / img.width, H / img.height);
+        const dw = img.width * r, dh = img.height * r;
+        x.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+        res(c.toDataURL('image/jpeg', 0.82));
+      } else {
+        // overlay — contain על רקע שקוף, שומר שקיפות (PNG)
+        const r = Math.min(W / img.width, H / img.height);
+        const dw = img.width * r, dh = img.height * r;
+        x.drawImage(img, (W - dw) / 2, (H - dh) / 2, dw, dh);
+        res(c.toDataURL('image/png'));
+      }
+      URL.revokeObjectURL(url);
+    };
+    img.onerror = rej;
+    img.src = url;
+  });
+}
+
+async function addFrame(file, type) {
+  showToast('מעבד מסגרת...');
+  try {
+    const data = await processFrameImage(file, type);
+    const id = 'f' + Date.now().toString(36);
+    const name = 'מסגרת ' + (state.frames.length + 1);
+    state.frames.push({ id, name, type, data });
+    if (!saveFrames()) {
+      state.frames.pop();
+      showToast('אין מקום אחסון — מחק מסגרת קודמת');
+      return;
+    }
+    renderStylesGrid();
+    fitScales();
+    renderSwatches();
+    selectCustom(id);
+    showToast('המסגרת נוספה ✓');
+  } catch (e) {
+    showToast('שגיאה בטעינת המסגרת');
+  }
+}
+
+function deleteFrame(id) {
+  if (!window.confirm('למחוק את המסגרת מהספרייה?')) return;
+  state.frames = state.frames.filter((f) => f.id !== id);
+  saveFrames();
+  if (state.customId === id) { state.customId = null; }
+  renderStylesGrid();
+  fitScales();
+  renderSwatches();
+  toggleAdjustCard();
+  renderStory();
+}
+
+// עדכון התצוגות המוקטנות של הסגנונות
+function renderSwatches() {
+  Object.keys(swatchStages).forEach((id) => {
+    const { mini } = swatchStages[id];
+    mini.setAttribute('dir', 'rtl');
+    mini.innerHTML = `
+      <div class="st-bg"></div>
+      <div class="st-decor">${decorHTML(id)}</div>
+      <div class="st-content">
+        <div class="st-title">${escapeHtml(state.title || 'כותרת')}</div>
+        ${formatAmount(state.amount) ? `<div class="st-amount"><span class="cur">₪</span>${escapeHtml(formatAmount(state.amount))}</div>` : ''}
+        <div class="st-badge">${escapeHtml(gameName(state.gameType) || '')}</div>
+        <div class="st-frame"><div class="st-photo-empty">תמונה</div></div>
+        <div class="st-cta">${escapeHtml(state.cta || '')}</div>
+        <div class="st-brand"><div class="b1">מפגש הספורט טבריה</div><div class="b2">שד' ספיר, טבריה</div></div>
+      </div>`;
+  });
+}
+
+// ---------- קנה מידה של התצוגות ----------
+function fitScales() {
+  const pw = previewFrame.clientWidth;
+  const scale = pw / W;
+  previewScale = scale; // נחוץ להמרת קואורדינטות גרירה
+  stage.style.transform = `scale(${scale})`;
+  previewFrame.style.height = (H * scale) + 'px';
+
+  Object.values(swatchStages).forEach(({ inner, sw }) => {
+    const w = sw.clientWidth;
+    inner.style.transform = `scale(${w / W})`;
+  });
+}
+
+// ---------- render מלא ----------
+// התצוגה הראשית נבנית מיד (רספונסיביות); התצוגות המוקטנות ב-debounce קל.
+let swatchTimer;
+// דקורציה מלאה לסגנון (מסגרת אמינות = מינימלי, ללא קונפטי)
+function decorHTML(style) {
+  const confetti = style === 'authenticity_frame' ? '' : confettiHTML(style);
+  return confetti + ornamentsHTML(style);
+}
+
+function renderStory() {
+  buildStoryDOM();
+  clearTimeout(swatchTimer);
+  swatchTimer = setTimeout(renderSwatches, 120);
+}
+
+// ============================================================
+//   ייצוא ל-PNG דרך foreignObject (הדפדפן מרנדר את ה-HTML)
+// ============================================================
+async function buildPngBlob() {
+  buildStoryDOM(); // ודא שהסטורי מעודכן
+  await (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve());
+
+  const css = $('storyCss').textContent;
+
+  // שיבוט הסטורי לייצוא בגודל מלא, מנותק מהתצוגה
+  const clone = story.cloneNode(true);
+  clone.setAttribute('xmlns', 'http://www.w3.org/1999/xhtml');
+
+  const holder = $('exportHolder');
+  holder.innerHTML = '';
+  holder.appendChild(clone);
+
+  // ודא שהתמונה בתוך השיבוט טענה
+  // ודא שכל התמונות בשיבוט טענו (תמונת זכייה + רקע/מסגרת מותאמים)
+  const imgs = [...clone.querySelectorAll('img')];
+  await Promise.all(imgs.map((im) => im.complete ? Promise.resolve()
+    : new Promise((res) => { im.onload = res; im.onerror = res; })));
+
+  const xml = new XMLSerializer().serializeToString(clone);
+  holder.innerHTML = '';
+
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}">` +
+    `<foreignObject x="0" y="0" width="${W}" height="${H}">` +
+    `<div xmlns="http://www.w3.org/1999/xhtml">` +
+    `<style>${css}</style>${xml}</div>` +
+    `</foreignObject></svg>`;
+
+  const url = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+
+  const img = new Image();
+  img.width = W; img.height = H;
+  await new Promise((res, rej) => {
+    img.onload = res; img.onerror = () => rej(new Error('render'));
+    img.src = url;
+  });
+  if (img.decode) { try { await img.decode(); } catch (e) {} }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H);
+  ctx.drawImage(img, 0, 0, W, H);
+
+  return await new Promise((res) => canvas.toBlob(res, 'image/png'));
+}
+
+function pngFileName() {
+  const d = new Date();
+  const p = (x) => String(x).padStart(2, '0');
+  return `winning_story_${d.getFullYear()}${p(d.getMonth()+1)}${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}.png`;
+}
+
+downloadBtn.addEventListener('click', async () => {
+  if (!state.imageData) { showToast('צריך קודם להעלות תמונה'); return; }
+  setBusy(downloadBtn, true, 'מייצר...');
+  try {
+    const blob = await buildPngBlob();
+    if (!blob) throw new Error('blob');
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = pngFileName();
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+    showToast('הסטורי הורד ✓');
+  } catch (e) {
+    showToast('שגיאה בייצור התמונה');
+    console.error(e);
+  } finally {
+    setBusy(downloadBtn, false);
+  }
+});
+
+shareBtn.addEventListener('click', async () => {
+  if (!state.imageData) { showToast('צריך קודם להעלות תמונה'); return; }
+  setBusy(shareBtn, true);
+  try {
+    const blob = await buildPngBlob();
+    const file = new File([blob], pngFileName(), { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'מפגש הספורט טבריה' });
+    } else {
+      showToast('שיתוף לא נתמך — השתמש בהורדה');
+    }
+  } catch (e) { /* בוטל */ }
+  finally { setBusy(shareBtn, false); }
+});
+
+createBtn.addEventListener('click', () => {
+  buildStoryDOM();
+  previewFrame.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  previewFrame.animate(
+    [{ boxShadow: '0 0 0 0 rgba(212,175,55,.7)' }, { boxShadow: '0 0 0 14px rgba(212,175,55,0)' }],
+    { duration: 700 });
+  showToast('הסטורי מוכן — אפשר להוריד ✓');
+});
+
+// ---------- עזרים ----------
+const _btnText = new WeakMap();
+function setBusy(btn, busy, txt) {
+  if (busy) {
+    _btnText.set(btn, btn.innerHTML);
+    if (txt) btn.textContent = txt;
+    btn.disabled = true; btn.style.opacity = '.7';
+  } else {
+    if (_btnText.has(btn)) btn.innerHTML = _btnText.get(btn);
+    btn.disabled = false; btn.style.opacity = '';
+  }
+}
+
+let toastTimer;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2200);
+}
+
+// ---------- פקדי התאמת מסגרת מותאמת ----------
+const scaleSlider = $('scaleSlider');
+const resetPhoto = $('resetPhoto');
+const textTogglesEl = $('textToggles');
+
+scaleSlider.addEventListener('input', () => {
+  state.photoTransform.scale = clamp(parseFloat(scaleSlider.value) || 1, 0.2, 4);
+  applyPhotoTransform();
+});
+resetPhoto.addEventListener('click', () => {
+  state.photoTransform = { x: 0, y: 0, scale: 1 };
+  syncScaleSlider();
+  applyPhotoTransform();
+});
+
+// כפתורי הצג/הסתר טקסט
+const TOGGLE_LABELS = { title: 'כותרת', amount: 'סכום', badge: 'סוג זכייה', cta: 'משפט סיום', brand: 'מיתוג' };
+Object.keys(TOGGLE_LABELS).forEach((key) => {
+  const lab = document.createElement('label');
+  lab.className = 'toggle';
+  const cb = document.createElement('input');
+  cb.type = 'checkbox'; cb.checked = state.textOn[key];
+  cb.addEventListener('change', () => { state.textOn[key] = cb.checked; renderStory(); });
+  lab.appendChild(cb);
+  lab.appendChild(document.createTextNode(TOGGLE_LABELS[key]));
+  textTogglesEl.appendChild(lab);
+});
+
+// ---------- אתחול ----------
+renderStylesGrid();                // בונה סגנונות מובנים + מסגרות מותאמות + אריח הוספה
+loadBuiltinFrames();               // טוען אוטומטית מסגרות מ-assets/frames (אם קיימות)
+buildStoryDOM();
+renderSwatches();
+fitScales();                       // מיידי (אחרי שה-layout מוכן)
+setTimeout(fitScales, 60);         // גיבוי אם ה-layout עדיין לא הושלם
+window.addEventListener('resize', fitScales);
+window.addEventListener('load', fitScales);
+if (document.readyState === 'complete') fitScales();
+
+// PWA
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+}
+</script>
+</body>
+</html>
